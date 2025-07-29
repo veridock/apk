@@ -57,7 +57,7 @@ docker-compose up -d
 - Poppler-utils (dla manipulacji PDF)
 
 ## 📦 Instalacja
-- Opcjonalnie: ImageMagick (dla pdf-processor.svg)
+- Opcjonalnie: ImageMagick (dla pdf.php.svg)
 
 ### Windows
 
@@ -110,16 +110,20 @@ cd svg-php-launcher
 
 ### 1. Tryb developerski (Built-in Server)
 ```bash
+# Uruchom serwer z routerem
 php -S localhost:8097 router.php
+
+# Lub bezpośrednio index.html (dla statycznych plików)
+php -S localhost:8097
 ```
 
 ### 2. Tryb CLI (przetwarzanie batch)
 ```bash
-# Renderuj pojedynczy plik
-php index.php
+# Renderuj plik SVG przez router
+php router.php sample-calculator.svg
 
 # Z parametrami środowiskowymi
-APP_TITLE="Moja Aplikacja" php index.php
+APP_TITLE="Moja Aplikacja" php router.php pdf.php.svg
 ```
 
 ### 3. Tryb produkcyjny (Apache/Nginx)
@@ -160,19 +164,31 @@ docker-compose --profile production up -d
 
 ```
 veridock-apk/
-├── index.html           # Główny interfejs webowy
-├── index.php           # Backend PHP
-├── portable.php        # Jednoplikowy launcher
-├── router-temp.php     # Router tymczasowy
-├── .env               # Konfiguracja aplikacji
-├── run.bat           # Launcher dla Windows
-├── run.sh            # Launcher dla Linux/Mac
-├── docker-compose.sh # Skrypt Docker Compose
-├── Dockerfile        # Obraz Docker
-├── electron-launcher/ # Aplikacja Electron
-├── sample-calculator.svg # Przykład kalkulatora SVG
-├── LICENSE           # Licencja Apache 2.0
-└── README.md        # Dokumentacja
+├── index.html              # Główny interfejs webowy
+├── portable.php           # Jednoplikowy launcher
+├── router.php             # Główny router PHP
+├── router-temp.php        # Router tymczasowy
+├── .env                   # Konfiguracja aplikacji
+├── .gitignore            # Pliki ignorowane przez Git
+├── run.bat               # Launcher dla Windows
+├── run.sh                # Launcher dla Linux/Mac
+├── docker-compose.sh     # Skrypt Docker Compose
+├── Dockerfile            # Obraz Docker
+├── debug.log             # Logi debugowania
+├── uploads/              # Katalog na przesłane pliki
+├── output/               # Katalog na pliki wyjściowe
+├── electron-launcher/    # Aplikacja Electron Desktop
+│   ├── main.js          # Główny proces Electron
+│   ├── renderer.js      # Proces renderowania
+│   ├── package.json     # Zależności Electron
+│   ├── assets/          # Zasoby aplikacji
+│   └── dist/           # Skompilowana aplikacja
+├── pdf.php.svg           # Procesor PDF z interfejsem SVG
+├── sample-calculator.svg # Przykład: kalkulator
+├── sample-clock.svg      # Przykład: zegar
+├── sample-tic-tac-toe.svg # Przykład: kółko i krzyżyk
+├── LICENSE               # Licencja Apache 2.0
+└── README.md            # Dokumentacja
 ```
 
 ## ⚙️ Konfiguracja
@@ -628,7 +644,7 @@ const observer = new IntersectionObserver((entries) => {
 
 ### Przykład zabezpieczonego uploadu
 ```php
-// W pdf-processor.svg
+// W pdf.php.svg
 if (isset($_FILES['pdf'])) {
     $allowed = ['application/pdf'];
     $max_size = 50 * 1024 * 1024; // 50MB

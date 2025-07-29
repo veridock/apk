@@ -111,7 +111,7 @@ for svg_file in *.svg; do
             "calculator.svg")
                 echo -e "- ${GREEN}$svg_file${NC}     (Interactive Calculator)"
                 ;;
-            "pdf-processor.svg")
+            "pdf.php.svg")
                 echo -e "- ${GREEN}$svg_file${NC} (PDF Converter)"
                 ;;
             *)

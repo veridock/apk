@@ -68,9 +68,9 @@ echo.
 echo Available applications:
 echo ----------------------
 if exist "calculator.svg" echo - calculator.svg     (Interactive Calculator)
-if exist "pdf-processor.svg" echo - pdf-processor.svg (PDF Converter)
+if exist "pdf.php.svg" echo - pdf.php.svg (PDF Converter)
 for %%f in (*.svg) do (
-    if not "%%f"=="calculator.svg" if not "%%f"=="pdf-processor.svg" (
+    if not "%%f"=="calculator.svg" if not "%%f"=="pdf.php.svg" (
         echo - %%f
     )
 )
