@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG+PHP Universal Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: -2px;
+        }
+
+        .content {
+            padding: 30px;
+            background: white;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .server-box {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .server-box:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .server-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .command-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h4 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .launcher-section {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .docker-compose {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .file-list {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .preview-container {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+            text-align: center;
+        }
+
+        .preview-container iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SVG+PHP Universal Launcher</h1>
+            <p>Uruchamiaj aplikacje SVG+PHP na dowolnej platformie</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('quick-start')">⚡ Szybki Start</button>
+            <button class="tab" onclick="showTab('platforms')">💻 Platformy</button>
+            <button class="tab" onclick="showTab('docker')">🐳 Docker</button>
+            <button class="tab" onclick="showTab('web-launcher')">🌐 Web Launcher</button>
+            <button class="tab" onclick="showTab('features')">✨ Funkcje</button>
+        </div>
+
+        <div class="content">
+            <!-- Szybki Start -->
+            <div id="quick-start" class="section active">
+                <h2>Szybki Start</h2>
+
+                <div class="server-box">
+                    <h3>1. Pobierz starter pack</h3>
+                    <div class="command-box">
+                        git clone https://github.com/your-repo/svg-php-launcher.git
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>2. Uruchom za pomocą jednej komendy</h3>
+                    <div class="command-box">
+                        # Windows
+                        launcher.bat
+
+                        # Linux/Mac
+                        ./launcher.sh
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>3. Otwórz w przeglądarce</h3>
+                    <p>Aplikacja automatycznie otworzy się pod adresem: <strong>http://localhost:8097</strong></p>
+                </div>
+
+                <div class="file-list">
+                    <h3>📁 Struktura projektu</h3>
+                    <div class="file-item">
+                        <div class="file-icon">📄</div>
+                        <span><strong>calculator.svg</strong> - Interaktywny kalkulator</span>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">📄</div>
+                        <span><strong>pdf-processor.svg</strong> - Konwerter PDF</span>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">🔧</div>
+                        <span><strong>router.php</strong> - Główny router</span>
+                    </div>
+                    <div class="file-item">
+                        <div class="file-icon">⚙️</div>
+                        <span><strong>.env</strong> - Konfiguracja aplikacji</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platformy -->
+            <div id="platforms" class="section">
+                <h2>Obsługiwane Platformy</h2>
+
+                <div class="server-box">
+                    <h3>🪟 Windows</h3>
+                    <p>Opcja 1: Użyj XAMPP</p>
+                    <div class="command-box">
+                        # Zainstaluj XAMPP ze strony apachefriends.org
+                        # Skopiuj pliki do C:\xampp\htdocs\svg-php
+                        # Uruchom Apache z panelu XAMPP
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+
+                    <p>Opcja 2: PHP Built-in Server</p>
+                    <div class="command-box">
+                        # Pobierz PHP ze strony windows.php.net
+                        cd C:\path\to\project
+                        php -S localhost:8097 router.php
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>🐧 Linux</h3>
+                    <div class="command-box">
+                        # Ubuntu/Debian
+                        sudo apt update
+                        sudo apt install php php-cli php-gd imagemagick
+
+                        # Uruchom
+                        php -S localhost:8097 router.php
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>🍎 macOS</h3>
+                    <div class="command-box">
+                        # Instalacja przez Homebrew
+                        brew install php imagemagick
+
+                        # Uruchom
+                        php -S localhost:8097 router.php
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>☁️ Cloud/VPS</h3>
+                    <p>Nginx configuration:</p>
+                    <div class="command-box">
+                        server {
+                            listen 80;
+                            server_name your-domain.com;
+                            root /var/www/svg-php;
+
+                            location ~ \.svg$ {
+                                fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+                                include fastcgi_params;
+                                fastcgi_param SCRIPT_FILENAME $document_root/router.php;
+                            }
+                        }
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Docker -->
+            <div id="docker" class="section">
+                <h2>Docker Deployment</h2>
+
+                <div class="docker-compose">
+                    <h3>docker-compose.yml</h3>
+                    <div class="command-box">
+version: '3.8'
+services:
+  svg-php-app:
+    build: .
+    ports:
+      - "8097:80"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_TITLE=SVG+PHP Calculator
+      - APP_VERSION=1.0.0
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="docker-compose">
+                    <h3>Dockerfile</h3>
+                    <div class="command-box">
+FROM php:8.0-apache
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    imagemagick \
+    libmagickwand-dev \
+    ghostscript \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick
+
+# Enable Apache modules
+RUN a2enmod rewrite
+
+# Copy application
+COPY . /var/www/html/
+
+# Configure Apache
+RUN echo '&lt;Directory /var/www/html&gt;\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+&lt;/Directory&gt;' > /etc/apache2/conf-available/svg-php.conf
+
+RUN a2enconf svg-php
+
+EXPOSE 80
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>Uruchomienie</h3>
+                    <div class="command-box">
+                        # Build i uruchom
+                        docker-compose up -d
+
+                        # Sprawdź status
+                        docker-compose ps
+
+                        # Logi
+                        docker-compose logs -f
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Web Launcher -->
+            <div id="web-launcher" class="section">
+                <h2>Web Launcher</h2>
+
+                <div class="launcher-section">
+                    <h3>🚀 Uruchom aplikację online</h3>
+
+                    <div class="input-group">
+                        <label for="app-select">Wybierz aplikację:</label>
+                        <select id="app-select">
+                            <option value="calculator.svg">Kalkulator</option>
+                            <option value="pdf-processor.svg">PDF Processor</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="server-type">Typ serwera:</label>
+                        <select id="server-type">
+                            <option value="builtin">PHP Built-in Server</option>
+                            <option value="xampp">XAMPP</option>
+                            <option value="docker">Docker</option>
+                            <option value="custom">Własny serwer</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="port">Port:</label>
+                        <input type="number" id="port" value="8097" min="1" max="65535">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="env-vars">Zmienne środowiskowe (.env):</label>
+                        <textarea id="env-vars" rows="5" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;">
+APP_TITLE=SVG+PHP Calculator
+APP_VERSION=1.0.0
+CALCULATOR_TITLE=Advanced Calculator
+APP_AUTHOR=Developer</textarea>
+                    </div>
+
+                    <button class="btn-primary" onclick="launchApp()">🚀 Uruchom aplikację</button>
+                    <button class="btn-primary" onclick="generateStartScript()">📝 Generuj skrypt startowy</button>
+
+                    <div id="launch-status" class="status"></div>
+                </div>
+
+                <div class="preview-container">
+                    <h3>Podgląd aplikacji</h3>
+                    <p>Po uruchomieniu aplikacja pojawi się tutaj:</p>
+                    <iframe id="app-preview" src="about:blank"></iframe>
+                </div>
+            </div>
+
+            <!-- Funkcje -->
+            <div id="features" class="section">
+                <h2>Główne Funkcje</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🎨 Frontend + Backend</h4>
+                        <p>Jeden plik SVG zawiera całą aplikację - interfejs i logikę PHP</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⚡ Bez kompilacji</h4>
+                        <p>Edytuj i odświeżaj - zmiany widoczne natychmiast</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📱 Responsywność</h4>
+                        <p>SVG automatycznie skaluje się do każdego ekranu</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔧 Konfiguracja</h4>
+                        <p>Plik .env dla łatwej personalizacji</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🌐 PWA Ready</h4>
+                        <p>Możliwość instalacji jako aplikacja</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🚀 Lekkie</h4>
+                        <p>Minimalne wymagania - tylko PHP</p>
+                    </div>
+                </div>
+
+                <div class="server-box">
+                    <h3>Przykładowe zastosowania</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✅ Interaktywne dashboardy</li>
+                        <li>✅ Narzędzia administracyjne</li>
+                        <li>✅ Wizualizacje danych</li>
+                        <li>✅ Prototypy aplikacji</li>
+                        <li>✅ Narzędzia deweloperskie</li>
+                        <li>✅ Aplikacje edukacyjne</li>
+                    </ul>
+                </div>
+
+                <div class="server-box">
+                    <h3>Wsparcie dla zmiennych</h3>
+                    <p>Router automatycznie zastępuje placeholdery w plikach SVG:</p>
+                    <div class="command-box">
+                        {APP_TITLE} → Tytuł aplikacji
+                        {APP_VERSION} → Wersja
+                        {CURRENT_TIME} → Aktualny czas
+                        {USER_NAME} → Nazwa użytkownika
+                        {PHP_VERSION} → Wersja PHP
+                        <button class="copy-btn" onclick="copyCommand(this)">📋 Kopiuj</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const sections = document.querySelectorAll('.section');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Copy command
+        function copyCommand(button) {
+            const commandBox = button.parentElement;
+            const text = commandBox.textContent.replace('📋 Kopiuj', '').trim();
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✅ Skopiowano!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Launch application
+        function launchApp() {
+            const app = document.getElementById('app-select').value;
+            const port = document.getElementById('port').value;
+            const serverType = document.getElementById('server-type').value;
+            const status = document.getElementById('launch-status');
+
+            status.style.display = 'block';
+            status.className = 'status success';
+            status.innerHTML = `
+                <strong>✅ Aplikacja uruchomiona!</strong><br>
+                Adres: <a href="http://localhost:${port}/${app}" target="_blank">http://localhost:${port}/${app}</a><br>
+                <small>Upewnij się, że serwer PHP jest uruchomiony na porcie ${port}</small>
+            `;
+
+            // Update preview
+            document.getElementById('app-preview').src = `http://localhost:${port}/${app}`;
+        }
+
+        // Generate start script
+        function generateStartScript() {
+            const app = document.getElementById('app-select').value;
+            const port = document.getElementById('port').value;
+            const envVars = document.getElementById('env-vars').value;
+            const serverType = document.getElementById('server-type').value;
+
+            let script = '';
+
+            if (serverType === 'builtin') {
+                script = `#!/bin/bash
+# SVG+PHP Launcher Script
+
+# Create .env file
+cat > .env << EOF
+${envVars}
+EOF
+
+# Start PHP server
+echo "Starting PHP server on port ${port}..."
+php -S localhost:${port} router.php
+
+# Open in browser
+if command -v xdg-open > /dev/null; then
+    xdg-open http://localhost:${port}/${app}
+elif command -v open > /dev/null; then
+    open http://localhost:${port}/${app}
+else
+    echo "Please open http://localhost:${port}/${app} in your browser"
+fi`;
+            } else if (serverType === 'docker') {
+                script = `#!/bin/bash
+# Docker Launch Script
+
+# Build and run
+docker-compose up -d
+
+# Wait for container
+sleep 2
+
+# Open in browser
+open http://localhost:${port}/${app}`;
+            }
+
+            // Create download
+            const blob = new Blob([script], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = serverType === 'docker' ? 'docker-launch.sh' : 'launch.sh';
+            a.click();
+
+            const status = document.getElementById('launch-status');
+            status.style.display = 'block';
+            status.className = 'status success';
+            status.textContent = '✅ Skrypt startowy został pobrany!';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

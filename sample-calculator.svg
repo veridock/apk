@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+  <rect width="300" height="400" fill="#2c3e50" rx="10"/>
+  <text x="150" y="30" text-anchor="middle" fill="white" font-size="20">{APP_TITLE}</text>
+
+  <!-- Display -->
+  <rect x="20" y="50" width="260" height="50" fill="#34495e" rx="5"/>
+  <text x="270" y="85" text-anchor="end" fill="white" font-size="24" id="display">0</text>
+
+  <!-- PHP Time Display -->
+  <text x="150" y="380" text-anchor="middle" fill="#95a5a6" font-size="12">
+    <?php echo "Time: " . date("H:i:s"); ?>
+  </text>
+
+  <script><![CDATA[
+    let display = document.getElementById("display");
+    let currentValue = "0";
+
+    // Simple calculator logic embedded
+    document.addEventListener("click", (e) => {
+      if (e.target.tagName === "rect" && e.target.classList.contains("btn")) {
+        const value = e.target.dataset.value;
+        if (value === "C") {
+          currentValue = "0";
+        } else if (value === "=") {
+          try {
+            currentValue = eval(currentValue).toString();
+          } catch {
+            currentValue = "Error";
+          }
+        } else {
+          if (currentValue === "0") currentValue = value;
+          else currentValue += value;
+        }
+        display.textContent = currentValue;
+      }
+    });
+  ]]></script>
+
+  <!-- Calculator buttons -->
+  <?php
+  $buttons = [
+    ["7", "8", "9", "/"],
+    ["4", "5", "6", "*"],
+    ["1", "2", "3", "-"],
+    ["C", "0", "=", "+"]
+  ];
+
+  $y = 120;
+  foreach ($buttons as $row) {
+    $x = 20;
+    foreach ($row as $btn) {
+      echo '<rect x="' . $x . '" y="' . $y . '" width="60" height="40" fill="#3498db" rx="5" class="btn" data-value="' . $btn . '" style="cursor:pointer"/>';
+      echo '<text x="' . ($x + 30) . '" y="' . ($y + 25) . '" text-anchor="middle" fill="white" font-size="18" pointer-events="none">' . $btn . '</text>';
+      $x += 70;
+    }
+    $y += 50;
+  }
+  ?>
+</svg>
