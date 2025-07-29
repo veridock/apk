@@ -1,17 +1,49 @@
 # 🚀 SVG+PHP Universal Launcher
 
-Kompleksowe rozwiązanie do uruchamiania aplikacji SVG+PHP na dowolnej platformie z łatwą dystrybucją. Projekt umożliwia tworzenie interaktywnych aplikacji używających SVG jako interfejsu użytkownika z logiką PHP w tle.
+[![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-blue)](https://php.net)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)](docker-compose.yml)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](#)
+[![Validation](https://img.shields.io/badge/Validation-31%20Checks-success)](validator.php)
+
+Kompleksowe, profesjonalne rozwiązanie do tworzenia i dystrybucji aplikacji SVG+PHP na dowolnej platformie. Projekt umożliwia budowanie zaawansowanych, interaktywnych aplikacji używających SVG jako interfejsu użytkownika z potencjałem pełnego PHP jako backendu.
+
+> 🌟 **Gotowy do produkcji** - Pełny stack z walidacją, testami, Dockerem i automatyczną dystrybucją!
+
+## 🎆 **Kluczowe funkcje:**
+
+### 🚀 **Core System**
+- 🌐 **Uniwersalny launcher** - działa na Windows, Linux, macOS
+- 📱 **Progressive Web App** - kompatybilność z PWA
+- 🎨 **SVG+PHP** - interaktywne aplikacje z logiką PHP
+- ⚡ **Portable mode** - jednoplikowy launcher bez instalacji
+
+### 🔒 **Bezpieczeństwo i walidacja**
+- 🛡️ **validator.php** - 31 typów kontroli bezpieczeństwa i jakości
+- 🔍 **Wykrywanie niebezpiecznych funkcji** PHP
+- 🛡️ **Ochrona XSS i SQL injection**
+- ✅ **Walidacja struktur XML/SVG** z obsługą PHP
+
+### 📦 **Deployment i dystrybucja**
+- 🎯 **build-dist.sh** - automatyczne pakiety dla wszystkich platform
+- 🐳 **Docker + Nginx** - gotowy stack produkcyjny
+- 🖥️ **Aplikacja Electron** - natywny desktop
+- 📋 **CI/CD ready** - kompleksowy system testów
+
+### 🛠️ **Developer Experience**
+- 🧪 **test.sh** - automatyczne testy całego stacku
+- 📊 **Szczegółowe raporty** walidacji i testów
+- 🔧 **Hot-reload** wsparcie dla development
+- 📖 **Kompleksowa dokumentacja** z przykładami
 
 ## 📋 Spis treści
 
 - [Szybki start](#-szybki-start)
-- [Wymagania](#-wymagania)
 - [Instalacja](#-instalacja)
 - [Sposoby uruchomienia](#-sposoby-uruchomienia)
+- [Walidacja i testowanie](#-walidacja-i-testowanie)
 - [Struktura projektu](#-struktura-projektu)
-- [Konfiguracja](#-konfiguracja)
-- [Deployment](#-deployment)
-- [Rozwój aplikacji](#-rozwój-aplikacji)
+- [Deployment i dystrybucja](#-deployment-i-dystrybucja)
 - [Troubleshooting](#-troubleshooting)
 
 ## 🎯 Szybki start
@@ -43,20 +75,9 @@ chmod +x run.sh
 docker-compose up -d
 ```
 
-## 💻 Wymagania
-
-### Wymagania minimalne
-- PHP 8.0+ (zalecane 8.2+)
-- Rozszerzenia PHP: `gd`, `imagick` (opcjonalne dla przetwarzania grafiki)
-- Apache/Nginx (dla trybu produkcyjnego) lub wbudowany serwer PHP
-- Docker i Docker Compose (dla deployment z kontenerami)
-
-### Wymagania dla zaawansowanych funkcji
-- ImageMagick (dla konwersji PDF)
-- Ghostscript (dla renderowania PDF)
-- Poppler-utils (dla manipulacji PDF)
-
 ## 📦 Instalacja
+
+**Wymagania:** PHP 8.0+, opcjonalnie Docker
 - Opcjonalnie: ImageMagick (dla pdf.php.svg)
 
 ### Windows
@@ -126,38 +147,58 @@ php router.php sample-calculator.svg
 APP_TITLE="Moja Aplikacja" php router.php pdf.php.svg
 ```
 
-### 3. Tryb produkcyjny (Apache/Nginx)
+## 🔍 Walidacja i testowanie
 
-**Apache (.htaccess):**
-```apache
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.+\.svg)$ router.php?file=$1 [L,QSA]
+### Zaawansowana walidacja SVG+PHP
 
-<FilesMatch "\.svg$">
-    SetHandler application/x-httpd-php
-</FilesMatch>
-```
+Projekt zawiera profesjonalny system walidacji `validator.php` z kontrolami:
 
-**Nginx:**
-```nginx
-location ~ \.svg$ {
-    fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME $document_root/router.php;
-}
-```
-
-### 4. Docker Compose
 ```bash
-# Podstawowe uruchomienie
-docker-compose up -d
+# Walidacja wszystkich plików SVG
+php validator.php
 
-# Z customowymi ustawieniami
-PORT=8080 APP_TITLE="Moja Aplikacja" docker-compose up -d
+# Walidacja konkretnego pliku
+php validator.php sample-calculator.svg
 
-# Tryb produkcyjny z Nginx
-docker-compose --profile production up -d
+# Walidacja rekurencyjna
+php validator.php . --recursive
+
+# Tryb cichy (tylko błędy)
+php validator.php --quiet
+```
+
+**Sprawdzane aspekty:**
+- ✅ **Struktura XML/SVG** - poprawność składni z obsługą PHP
+- ✅ **Kompatybilność PWA** - responsive design, self-contained
+- ✅ **Integracja PHP** - osadzony kod PHP w SVG
+- ✅ **Bezpieczeństwo** - wykrywanie niebezpiecznych funkcji
+- ✅ **Elementy HTML** - foreignObject i XHTML namespace
+- ✅ **Optymalizacja** - rozmiar pliku, external dependencies
+
+### Kompleksowy system testów
+
+```bash
+# Uruchom pełny zestaw testów
+./test.sh
+
+# Komponenty testowane:
+# - Środowisko PHP (wersja, CLI)
+# - Struktura plików projektu
+# - Walidacja SVG+PHP przez validator.php
+# - Składnia PHP wszystkich plików
+# - Konfiguracja Docker (jeśli dostępna)
+```
+
+**Przykład wyniku walidacji:**
+```
+🚀 Testing SVG file: sample-calculator.svg
+=========================================
+
+Total Tests:  31
+Passed:      29 ✅  (93.55%)
+Failed:      2 ❌
+Warnings:    2 ⚠️
+Status:      ✅ PASSED
 ```
 
 ## 📁 Struktura projektu
@@ -168,25 +209,36 @@ veridock-apk/
 ├── portable.php           # Jednoplikowy launcher
 ├── router.php             # Główny router PHP
 ├── router-temp.php        # Router tymczasowy
+├── validator.php          # ⭐ Zaawansowany system walidacji SVG+PHP
 ├── .env                   # Konfiguracja aplikacji
 ├── .gitignore            # Pliki ignorowane przez Git
+├── 🔧 SKRYPTY URUCHAMIANIA
 ├── run.bat               # Launcher dla Windows
 ├── run.sh                # Launcher dla Linux/Mac
-├── docker-compose.sh     # Skrypt Docker Compose
+├── test.sh               # ⭐ Kompleksowy system testów
+├── build-dist.sh         # ⭐ Generator dystrybucji multiplatform
+├── 🐳 DEPLOYMENT
 ├── Dockerfile            # Obraz Docker
-├── debug.log             # Logi debugowania
+├── docker-compose.yml    # ⭐ Orkiestracja Docker z bazą danych
+├── docker-compose.sh     # Pomocniczy skrypt Docker
+├── nginx.conf            # ⭐ Konfiguracja Nginx dla produkcji
+├── 📁 KATALOGI ROBOCZE
 ├── uploads/              # Katalog na przesłane pliki
 ├── output/               # Katalog na pliki wyjściowe
+├── debug.log             # Logi debugowania
+├── 🖥️ APLIKACJA DESKTOP
 ├── electron-launcher/    # Aplikacja Electron Desktop
 │   ├── main.js          # Główny proces Electron
 │   ├── renderer.js      # Proces renderowania
 │   ├── package.json     # Zależności Electron
 │   ├── assets/          # Zasoby aplikacji
 │   └── dist/           # Skompilowana aplikacja
+├── 🎨 PRZYKŁADY SVG+PHP
 ├── pdf.php.svg           # Procesor PDF z interfejsem SVG
 ├── sample-calculator.svg # Przykład: kalkulator
 ├── sample-clock.svg      # Przykład: zegar
 ├── sample-tic-tac-toe.svg # Przykład: kółko i krzyżyk
+├── 📄 DOKUMENTACJA
 ├── LICENSE               # Licencja Apache 2.0
 └── README.md            # Dokumentacja
 ```
@@ -597,150 +649,7 @@ echo "svg_php_memory_usage " . memory_get_usage() . "\n";
 ?>
 ```
 
-## 📈 Optymalizacja wydajności
 
-### 1. Cache SVG output
-```php
-// W router.php
-$cache_file = 'cache/' . md5($uri) . '.svg';
-$cache_time = 3600; // 1 godzina
-
-if (file_exists($cache_file) && time() - filemtime($cache_file) < $cache_time) {
-    readfile($cache_file);
-    exit;
-}
-
-// Generate SVG...
-file_put_contents($cache_file, $output);
-```
-
-### 2. Kompresja Gzip
-```php
-// Dodaj do router.php
-if (!ob_start("ob_gzhandler")) ob_start();
-```
-
-### 3. Lazy loading dla dużych SVG
-```javascript
-// W SVG
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            // Load complex elements
-        }
-    });
-});
-```
-
-## 🔐 Bezpieczeństwo
-
-### Checklist bezpieczeństwa
-- [ ] Escapowanie danych użytkownika
-- [ ] Walidacja uploadów
-- [ ] HTTPS w produkcji
-- [ ] Content Security Policy
-- [ ] Rate limiting
-- [ ] Aktualizacje PHP i zależności
-
-### Przykład zabezpieczonego uploadu
-```php
-// W pdf.php.svg
-if (isset($_FILES['pdf'])) {
-    $allowed = ['application/pdf'];
-    $max_size = 50 * 1024 * 1024; // 50MB
-    
-    if (!in_array($_FILES['pdf']['type'], $allowed)) {
-        die('Invalid file type');
-    }
-    
-    if ($_FILES['pdf']['size'] > $max_size) {
-        die('File too large');
-    }
-    
-    // Bezpieczna nazwa pliku
-    $filename = bin2hex(random_bytes(16)) . '.pdf';
-    move_uploaded_file($_FILES['pdf']['tmp_name'], 'uploads/' . $filename);
-}
-```
-
-## 🎯 Roadmap
-
-- [ ] WebSocket support dla real-time updates
-- [ ] PWA manifest generator
-- [ ] Visual SVG editor
-- [ ] Plugin system
-- [ ] Database integration examples
-- [ ] Authentication system
-- [ ] Multi-language support
-
-## 📦 Generowanie dystrybucji
-
-### Automatyczne buildowanie pakietów
-
-Użyj skryptu `build-dist.sh` aby wygenerować pakiety dla wszystkich platform:
-
-```bash
-# Podstawowe buildowanie
-./build-dist.sh
-
-# Z konkretną wersją
-VERSION=2.0.0 ./build-dist.sh
-```
-
-### Dostępne pakiety dystrybucji:
-
-| Pakiet | Zawiera | Przeznaczenie |
-|--------|---------|---------------|
-| **Windows** (`*.zip`) | `run.bat`, `install.bat`, pliki core | Użytkownicy Windows |
-| **Unix** (`*.tar.gz`) | `run.sh`, `install.sh`, pliki core | Linux/macOS |
-| **Docker** (`*.tar.gz`) | `Dockerfile`, `docker-compose.yml`, `nginx.conf` | Deployment kontenerowy |
-| **Portable** (`*.zip`) | `portable.php`, README | Single-file launcher |
-| **Electron** (`*.tar.gz`) | Pełna aplikacja desktop | Aplikacja desktop |
-
-### Instalacja z pakietów:
-
-**Windows:**
-```batch
-# Rozpakuj pakiet
-unzip svg-php-launcher-v1.0.0-windows.zip
-cd windows
-
-# Uruchom instalator
-install.bat
-```
-
-**Linux/macOS:**
-```bash
-# Rozpakuj pakiet
-tar -xzf svg-php-launcher-v1.0.0-unix.tar.gz
-cd unix
-
-# Uruchom instalator
-./install.sh
-```
-
-**Docker:**
-```bash
-# Rozpakuj pakiet
-tar -xzf svg-php-launcher-v1.0.0-docker.tar.gz
-cd docker
-
-# Uruchom instalator Docker
-./docker-install.sh
-```
-
-## 🧪 Testowanie
-
-Użyj wbudowanego systemu testów:
-
-```bash
-# Uruchom wszystkie testy
-./test.sh
-
-# Testuj konkretny aspekt
-php -l *.php  # Tylko składnia PHP
-xmllint --noout *.svg  # Tylko pliki SVG
-```
 
 ## 🔧 Troubleshooting
 
@@ -770,7 +679,6 @@ sudo lsof -ti:8097 | xargs kill -9
 **Problem:** `Permission denied`
 ```bash
 # Linux/macOS - napraw uprawnienia
-chod +x run.sh
 chmod +x *.sh
 ```
 
@@ -779,8 +687,10 @@ chmod +x *.sh
 # To jest NORMALNE dla plików SVG+PHP!
 # Pliki z kodem PHP nie są poprawnym XML-em
 
-# Użyj dedykowanego walidatora zamiast xmllint:
-./validate-svg-php.sh
+# Użyj zaawansowanego walidatora SVG+PHP:
+php validator.php              # Wszystkie pliki SVG
+php validator.php plik.svg     # Konkretny plik
+php validator.php . --recursive # Rekurencyjnie
 
 # Lub testuj komponenty osobno:
 php -l router.php  # Walidacja PHP
@@ -789,7 +699,7 @@ grep -c "<svg" *.svg  # Sprawdź strukturę SVG
 
 **Problem:** SVG nie ładuje się
 - Sprawdź router PHP: `php -l router.php`
-- Sprawdź strukturę SVG: `./validate-svg-php.sh plik.svg`
+- Pełna walidacja: `php validator.php plik.svg`
 - Sprawdź logi: `tail -f debug.log`
 - Uruchom przez router: `php router.php plik.svg`
 

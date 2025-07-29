@@ -1,18 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
-  <rect width="300" height="400" fill="#2c3e50" rx="10"/>
-  <text x="150" y="30" text-anchor="middle" fill="white" font-size="20">{APP_TITLE}</text>
-
-  <!-- Display -->
-  <rect x="20" y="50" width="260" height="50" fill="#34495e" rx="5"/>
-  <text x="270" y="85" text-anchor="end" fill="white" font-size="24" id="display">0</text>
-
-  <!-- PHP Time Display -->
-  <text x="150" y="380" text-anchor="middle" fill="#95a5a6" font-size="12">
+    <rect width="300" height="400" fill="#2c3e50" rx="10"/>
+    <text x="150" y="30" fill="#fff" font-size="20" text-anchor="middle">{APP_TITLE}</text>
+    <rect width="260" height="50" x="20" y="50" fill="#34495e" rx="5"/>
+    <text id="display" x="270" y="85" fill="#fff" font-size="24" text-anchor="end">0</text>
+    <text x="150" y="380" fill="#95a5a6" font-size="12" text-anchor="middle">
     <?php echo "Time: " . date("H:i:s"); ?>
-  </text>
 
-  <script><![CDATA[
+  </text>
+    <script>
+        <![CDATA[
     let display = document.getElementById("display");
     let currentValue = "0";
 
@@ -35,11 +31,9 @@
         display.textContent = currentValue;
       }
     });
-  ]]></script>
-
-  <!-- Calculator buttons -->
-  <?php
-  $buttons = [
+  ]]>
+    </script>
+<?php $buttons = [
     ["7", "8", "9", "/"],
     ["4", "5", "6", "*"],
     ["1", "2", "3", "-"],

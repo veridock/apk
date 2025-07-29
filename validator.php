@@ -206,6 +206,9 @@ class SVGPWAValidator {
         $isUTF8 = mb_check_encoding($content, 'UTF-8');
         $this->addTest("utf8_encoding", "UTF-8 encoding", $isUTF8);
         
+        // Test 5: Security checks - dangerous PHP functions
+        $this->testSecurityChecks($content);
+        
         return true;
     }
     
@@ -226,6 +229,44 @@ class SVGPWAValidator {
         }
         
         return false;
+    }
+    
+    /**
+     * Security validation checks
+     */
+    private function testSecurityChecks($content) {
+        // Check for dangerous PHP functions
+        $dangerousFunctions = ['eval', 'exec', 'system', 'shell_exec', 'passthru', 'file_get_contents', 'file_put_contents', 'unlink', 'rmdir'];
+        $foundDangerous = [];
+        
+        foreach ($dangerousFunctions as $func) {
+            if (preg_match('/\b' . preg_quote($func) . '\s*\(/', $content)) {
+                $foundDangerous[] = $func;
+            }
+        }
+        
+        $isSafe = empty($foundDangerous);
+        $this->addTest("security_dangerous_functions", "No dangerous PHP functions", $isSafe);
+        
+        if (!$isSafe) {
+            $this->addWarning("Dangerous functions detected: " . implode(', ', $foundDangerous));
+        }
+        
+        // Check for potential XSS vulnerabilities
+        $hasUnsafeOutput = preg_match('/echo\s+\$_[GET|POST|REQUEST]/i', $content);
+        $this->addTest("security_xss_protection", "No direct user input echoing", !$hasUnsafeOutput);
+        
+        if ($hasUnsafeOutput) {
+            $this->addWarning("Potential XSS vulnerability: Use htmlspecialchars() for user input");
+        }
+        
+        // Check for SQL injection risks
+        $hasSqlRisk = preg_match('/\$_[GET|POST|REQUEST].*?mysql_query|mysqli_query|query/i', $content);
+        $this->addTest("security_sql_injection", "No direct SQL query with user input", !$hasSqlRisk);
+        
+        if ($hasSqlRisk) {
+            $this->addWarning("Potential SQL injection: Use prepared statements");
+        }
     }
     
     /**

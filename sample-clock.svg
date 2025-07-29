@@ -1,23 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 250 250">
-  <circle cx="125" cy="125" r="120" fill="#34495e" stroke="#2c3e50" stroke-width="5"/>
-  <circle cx="125" cy="125" r="5" fill="#e74c3c"/>
-  
-  <text x="125" y="20" text-anchor="middle" fill="white" font-size="16">{APP_TITLE}</text>
-  
-  <!-- Clock numbers -->
-  <text x="125" y="25" text-anchor="middle" fill="white" font-size="14">12</text>
-  <text x="230" y="130" text-anchor="middle" fill="white" font-size="14">3</text>
-  <text x="125" y="240" text-anchor="middle" fill="white" font-size="14">6</text>
-  <text x="20" y="130" text-anchor="middle" fill="white" font-size="14">9</text>
-  
-  <!-- Digital time display -->
-  <rect x="75" y="180" width="100" height="30" fill="#2c3e50" rx="5"/>
-  <text x="125" y="200" text-anchor="middle" fill="#3498db" font-size="14" id="digital-time">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250">
+    <circle cx="125" cy="125" r="120" fill="#34495e" stroke="#2c3e50" stroke-width="5"/>
+    <circle cx="125" cy="125" r="5" fill="#e74c3c"/>
+    <text x="125" y="20" fill="#fff" font-size="16" text-anchor="middle">{APP_TITLE}</text>
+    <text x="125" y="25" fill="#fff" font-size="14" text-anchor="middle">12</text>
+    <text x="230" y="130" fill="#fff" font-size="14" text-anchor="middle">3</text>
+    <text x="125" y="240" fill="#fff" font-size="14" text-anchor="middle">6</text>
+    <text x="20" y="130" fill="#fff" font-size="14" text-anchor="middle">9</text>
+    <rect width="100" height="30" x="75" y="180" fill="#2c3e50" rx="5"/>
+    <text id="digital-time" x="125" y="200" fill="#3498db" font-size="14" text-anchor="middle">
     <?php echo date("H:i:s"); ?>
+
   </text>
-  
-  <script><![CDATA[
+    <script>
+        <![CDATA[
     // Update digital clock every second
     function updateClock() {
       const now = new Date();
@@ -30,14 +25,9 @@
     
     setInterval(updateClock, 1000);
     updateClock();
-  ]]></script>
-  
-  <!-- Hour hand -->
-  <line x1="125" y1="125" x2="125" y2="80" stroke="#e74c3c" stroke-width="4" stroke-linecap="round" id="hour-hand"/>
-  
-  <!-- Minute hand -->
-  <line x1="125" y1="125" x2="125" y2="60" stroke="#3498db" stroke-width="3" stroke-linecap="round" id="minute-hand"/>
-  
-  <!-- Second hand -->
-  <line x1="125" y1="125" x2="125" y2="50" stroke="#f39c12" stroke-width="2" stroke-linecap="round" id="second-hand"/>
+  ]]>
+    </script>
+    <path id="hour-hand" stroke="#e74c3c" stroke-linecap="round" stroke-width="4" d="M125 125V80"/>
+    <path id="minute-hand" stroke="#3498db" stroke-linecap="round" stroke-width="3" d="M125 125V60"/>
+    <path id="second-hand" stroke="#f39c12" stroke-linecap="round" stroke-width="2" d="M125 125V50"/>
 </svg>

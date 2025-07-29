@@ -60,22 +60,26 @@ test_case "output directory" "test -d output"
 
 echo
 
-# SVG Files Tests
-echo "SVG Files Tests:"
-echo "---------------"
-for svg_file in *.svg; do
-    if [ -f "$svg_file" ]; then
-        # Check if file contains PHP code
-        if grep -q "<?php" "$svg_file"; then
-            # For SVG+PHP files, check basic structure and PHP syntax
-            test_case "$svg_file structure" "grep -q '<svg' \"$svg_file\" && grep -q '</svg>' \"$svg_file\""
-            test_case "$svg_file PHP syntax" "php -l \"$svg_file\" 2>/dev/null || echo 'PHP syntax OK (SVG+PHP file)'"
-        else
-            # For pure SVG files, use XML validation
-            test_case "$svg_file XML syntax" "xmllint --noout \"$svg_file\""
+# SVG+PHP Files Tests (using validator.php)
+echo "SVG+PHP Files Tests:"
+echo "------------------"
+test_case "validator.php available" "test -f validator.php"
+
+if [ -f "validator.php" ]; then
+    # Test all SVG files with comprehensive validator
+    for svg_file in *.svg; do
+        if [ -f "$svg_file" ]; then
+            test_case "$svg_file validation" "php validator.php \"$svg_file\" --quiet"
         fi
-    fi
-done
+    done
+else
+    echo "⚠️  validator.php not found, falling back to basic checks"
+    for svg_file in *.svg; do
+        if [ -f "$svg_file" ]; then
+            test_case "$svg_file structure" "grep -q '<svg' \"$svg_file\" && grep -q '</svg>' \"$svg_file\""
+        fi
+    done
+fi
 
 echo
 

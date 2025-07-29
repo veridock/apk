@@ -1,37 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  viewBox="0 0 350 400">
-  <rect width="350" height="400" fill="#ecf0f1" rx="10"/>
-  <text x="175" y="30" text-anchor="middle" fill="#2c3e50" font-size="24">{APP_TITLE}</text>
-  
-  <!-- Game board -->
-    <!-- Grid lines -->
-    <line x1="83" y1="0" x2="83" y2="250" stroke="#34495e" stroke-width="3"/>
-    <line x1="167" y1="0" x2="167" y2="250" stroke="#34495e" stroke-width="3"/>
-    <line x1="0" y1="83" x2="250" y2="83" stroke="#34495e" stroke-width="3"/>
-    <line x1="0" y1="167" x2="250" y2="167" stroke="#34495e" stroke-width="3"/>
-    
-    <!-- Game cells -->
-    <?php for ($i = 0; $i < 3; $i++): ?>
-      <?php for ($j = 0; $j < 3; $j++): ?>
-        <?php
-          $x = $j * 83.33;
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 400">
+    <rect width="350" height="400" fill="#ecf0f1" rx="10"/>
+    <text x="175" y="30" fill="#2c3e50" font-size="24" text-anchor="middle">{APP_TITLE}</text>
+    <path stroke="#34495e" stroke-width="3" d="M83 0v250M167 0v250M0 83h250M0 167h250"/>
+<?php for ($i = 0; $i < 3; $i++): ?>
+<?php for ($j = 0; $j < 3; $j++): ?>
+<?php $x = $j * 83.33;
           $y = $i * 83.33;
           $cellId = $i * 3 + $j;
         ?>
-        <rect x="<?php echo $x; ?>" y="<?php echo $y; ?>" width="83" height="83" 
-              fill="transparent" class="cell" data-cell="<?php echo $cellId; ?>" 
-              style="cursor: pointer;"/>
-      <?php endfor; ?>
-    <?php endfor; ?>
-
-  <!-- Game status -->
-  <text x="175" y="340" text-anchor="middle" fill="#2c3e50" font-size="18" id="game-status">Player X's turn</text>
-  
-  <!-- Reset button -->
-  <rect x="125" y="360" width="100" height="30" fill="#3498db" rx="5" id="reset-btn" style="cursor: pointer;"/>
-  <text x="175" y="380" text-anchor="middle" fill="white" font-size="14" pointer-events="none">New Game</text>
-  
-  <script><![CDATA[
+    <rect width="83" height="83" x="&lt;?php echo $x; ?&gt;" y="&lt;?php echo $y; ?&gt;" fill="transparent" class="cell" data-cell="&lt;?php echo $cellId; ?&gt;" style="cursor:pointer"/>
+<?php endfor; ?>
+<?php endfor; ?>
+    <text id="game-status" x="175" y="340" fill="#2c3e50" font-size="18" text-anchor="middle">Player X&apos;s turn</text>
+    <rect id="reset-btn" width="100" height="30" x="125" y="360" fill="#3498db" rx="5" style="cursor:pointer"/>
+    <text x="175" y="380" fill="#fff" font-size="14" pointer-events="none" text-anchor="middle">New Game</text>
+    <script>
+        <![CDATA[
     let currentPlayer = 'X';
     let board = ['', '', '', '', '', '', '', '', ''];
     let gameActive = true;
@@ -123,5 +107,6 @@
       const symbols = document.querySelectorAll('line[stroke="#e74c3c"], circle[stroke="#3498db"]');
       symbols.forEach(symbol => symbol.remove());
     }
-  ]]></script>
+  ]]>
+    </script>
 </svg>

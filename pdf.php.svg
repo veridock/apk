@@ -1,21 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml"  width="1024" height="800" viewBox="0 0 1024 800">
-  <title>PDF Processor PWA</title>
-  <desc>Advanced PDF conversion and analysis tool</desc>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="1024" height="800" viewBox="0 0 1024 800">
+    <title>PDF Processor PWA</title>
+    <desc>
+        Advanced PDF conversion and analysis tool
+    </desc>
+    <defs>
+        <style>
+            *{font-family:system-ui,sans-serif}.button{fill:#e74c3c;cursor:pointer}.button:hover{fill:#c0392b}.button-text{fill:#fff;font-size:11px;text-anchor:middle}.input{fill:#fff;stroke:#ced4da}
+        </style>
+    </defs>
 
-  <defs>
-    <style>
-      * { font-family: system-ui, sans-serif; }
-      .header { fill: #e74c3c; font-size: 20px; font-weight: bold; }
-      .button { fill: #e74c3c; cursor: pointer; }
-      .button:hover { fill: #c0392b; }
-      .button-text { fill: white; font-size: 11px; text-anchor: middle; }
-      .panel { fill: #f8f9fa; stroke: #dee2e6; }
-      .input { fill: white; stroke: #ced4da; }
-    </style>
-  </defs>
-
-    <?php
-// PDF Processor - Advanced PHP+SVG PWA with PDF conversion and analysis
+    <?php // PDF Processor - Advanced PHP+SVG PWA with PDF conversion and analysis
+// IMPORTANT: Handle AJAX requests BEFORE any SVG output to ensure proper JSON responses
 
 // Enhanced logging function
 function logMessage($message, $level = 'INFO') {
@@ -24,314 +19,220 @@ function logMessage($message, $level = 'INFO') {
     file_put_contents(__DIR__ . '/debug.log', $logEntry, FILE_APPEND);
 }
 
-// Initialize logging
-logMessage("=== PDF Processor Application Started ===");
-logMessage("PHP Version: " . PHP_VERSION);
-logMessage("Current working directory: " . __DIR__);
-logMessage("Server info: " . $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown');
-logMessage("Request method: " . $_SERVER['REQUEST_METHOD'] ?? 'Unknown');
-logMessage("Request URI: " . $_SERVER['REQUEST_URI'] ?? 'Unknown');
-
+// Initialize directories and logging
 $uploadDir = __DIR__ . '/uploads';
 $outputDir = __DIR__ . '/output';
 
-logMessage("Checking directories...");
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755, true);
-    logMessage("Created upload directory: $uploadDir");
-} else {
-    logMessage("Upload directory exists: $uploadDir");
 }
-
 if (!is_dir($outputDir)) {
     mkdir($outputDir, 0755, true);
-    logMessage("Created output directory: $outputDir");
-} else {
-    logMessage("Output directory exists: $outputDir");
 }
 
-// Log existing files in directories
-$uploadFiles = glob($uploadDir . '/*');
-$outputFiles = glob($outputDir . '/*');
-logMessage("Files in upload directory: " . count($uploadFiles) . " files");
-logMessage("Files in output directory: " . count($outputFiles) . " files");
+// Handle AJAX requests FIRST - before any SVG output
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Set JSON content type
+    header('Content-Type: application/json');
 
-// Handle file upload
-if (isset($_FILES['pdfFile'])) {
-    logMessage("=== FILE UPLOAD STARTED ===", 'UPLOAD');
-    logMessage("Upload attempt initiated", 'UPLOAD');
-    logMessage("FILES data: " . print_r($_FILES['pdfFile'], true), 'UPLOAD');
-    logMessage("POST data keys: " . implode(', ', array_keys($_POST)), 'UPLOAD');
-    logMessage("File error code: " . $_FILES['pdfFile']['error'], 'UPLOAD');
-    
-    $uploadFile = $uploadDir . '/' . basename($_FILES['pdfFile']['name']);
-    $absolutePath = realpath($uploadDir) . '/' . basename($_FILES['pdfFile']['name']);
-    
-    logMessage("Target path: $uploadFile", 'UPLOAD');
-    logMessage("Absolute path: $absolutePath", 'UPLOAD');
-    logMessage("Original filename: " . $_FILES['pdfFile']['name'], 'UPLOAD');
-    logMessage("File type: " . $_FILES['pdfFile']['type'], 'UPLOAD');
-    logMessage("File size: " . $_FILES['pdfFile']['size'] . " bytes", 'UPLOAD');
-    logMessage("Temp file: " . $_FILES['pdfFile']['tmp_name'], 'UPLOAD');
+    // Handle file upload
+    if (isset($_FILES['pdfFile'])) {
+        logMessage("=== FILE UPLOAD STARTED ===", 'UPLOAD');
+        logMessage("Upload attempt initiated", 'UPLOAD');
+        logMessage("FILES data: " . print_r($_FILES['pdfFile'], true), 'UPLOAD');
 
-    if (move_uploaded_file($_FILES['pdfFile']['tmp_name'], $uploadFile)) {
-        // Verify file actually exists
-        $fileExists = file_exists($uploadFile);
-        $fileSize = $fileExists ? filesize($uploadFile) : 0;
-        $filePerms = $fileExists ? substr(sprintf('%o', fileperms($uploadFile)), -4) : 'N/A';
+        $uploadFile = $uploadDir . '/' . basename($_FILES['pdfFile']['name']);
 
-        logMessage("SUCCESS: File uploaded successfully", 'UPLOAD');
-        logMessage("Final file path: $uploadFile", 'UPLOAD');
-        logMessage("File exists check: " . ($fileExists ? 'YES' : 'NO'), 'UPLOAD');
-        logMessage("File size: $fileSize bytes", 'UPLOAD');
-        logMessage("File permissions: $filePerms", 'UPLOAD');
-        logMessage("File is readable: " . (is_readable($uploadFile) ? 'YES' : 'NO'), 'UPLOAD');
-        logMessage("=== FILE UPLOAD COMPLETED SUCCESSFULLY ===", 'UPLOAD');
+        logMessage("Target path: $uploadFile", 'UPLOAD');
+        logMessage("File size: " . $_FILES['pdfFile']['size'] . " bytes", 'UPLOAD');
 
-        // Return JSON response and exit immediately
-        echo json_encode([
-            'success' => true,
-            'filename' => basename($_FILES['pdfFile']['name']),
-            'absolutePath' => $absolutePath,
-            'fileExists' => $fileExists,
-            'fileSize' => $fileSize,
-            'permissions' => $filePerms,
-            'message' => 'File uploaded successfully'
-        ]);
+        if (move_uploaded_file($_FILES['pdfFile']['tmp_name'], $uploadFile)) {
+            $fileExists = file_exists($uploadFile);
+            $fileSize = $fileExists ? filesize($uploadFile) : 0;
+
+            logMessage("SUCCESS: File uploaded successfully", 'UPLOAD');
+            logMessage("Final file path: $uploadFile", 'UPLOAD');
+            logMessage("File exists check: " . ($fileExists ? 'YES' : 'NO'), 'UPLOAD');
+            logMessage("=== FILE UPLOAD COMPLETED SUCCESSFULLY ===", 'UPLOAD');
+
+            echo json_encode([
+                'success' => true,
+                'filename' => basename($_FILES['pdfFile']['name']),
+                'message' => 'File uploaded successfully'
+            ]);
+            exit;
+        } else {
+            logMessage("FAILED: Upload failed", 'ERROR');
+            logMessage("=== FILE UPLOAD FAILED ===", 'ERROR');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Upload failed'
+            ]);
+            exit;
+        }
+    }
+
+    // Handle PDF conversion
+    if (isset($_POST['action']) && $_POST['action'] === 'convert') {
+        logMessage("=== PDF CONVERSION STARTED ===", 'CONVERT');
+        $filename = $_POST['filename'] ?? '';
+        $format = $_POST['format'] ?? 'png';
+        $dpi = intval($_POST['dpi'] ?? 300);
+
+        logMessage("Convert request - File: $filename, Format: $format, DPI: $dpi", 'CONVERT');
+
+        $inputFile = $uploadDir . '/' . $filename;
+        $outputFile = $outputDir . '/' . pathinfo($filename, PATHINFO_FILENAME) . '_%d.' . $format;
+
+        if (!file_exists($inputFile)) {
+            logMessage("ERROR: Input file not found: $inputFile", 'ERROR');
+            echo json_encode(['success' => false, 'message' => 'File not found']);
+            exit;
+        }
+
+        $startTime = microtime(true);
+        $device = ($format === 'png') ? 'png16m' : 'jpeg';
+        $command = "gs -dNOPAUSE -dBATCH -sDEVICE=$device -r$dpi -sOutputFile=\"$outputFile\" \"$inputFile\" 2>&1";
+
+        logMessage("Executing command: $command", 'CONVERT');
+        exec($command, $output, $returnCode);
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        logMessage("Command executed in {$executionTime}ms with return code: $returnCode", 'CONVERT');
+        logMessage("Command output: " . implode("\n", $output), 'CONVERT');
+
+        if ($returnCode === 0) {
+            $outputFiles = glob(str_replace('%d', '*', $outputFile));
+            logMessage("SUCCESS: Generated " . count($outputFiles) . " output files", 'CONVERT');
+            logMessage("=== PDF CONVERSION COMPLETED SUCCESSFULLY ===", 'CONVERT');
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Conversion completed',
+                'files' => array_map('basename', $outputFiles),
+                'executionTime' => $executionTime
+            ]);
+        } else {
+            logMessage("ERROR: Conversion failed with return code: $returnCode", 'ERROR');
+            logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Conversion failed: ' . implode(' ', $output)
+            ]);
+        }
         exit;
-    } else {
-        $uploadError = error_get_last();
-        logMessage("FAILED: Upload failed", 'ERROR');
-        logMessage("Temp file: " . $_FILES['pdfFile']['tmp_name'], 'ERROR');
-        logMessage("Target file: $uploadFile", 'ERROR');
-        logMessage("Upload directory writable: " . (is_writable($uploadDir) ? 'YES' : 'NO'), 'ERROR');
-        logMessage("Upload directory permissions: " . substr(sprintf('%o', fileperms($uploadDir)), -4), 'ERROR');
-        logMessage("Last PHP error: " . ($uploadError ? print_r($uploadError, true) : 'None'), 'ERROR');
-        logMessage("=== FILE UPLOAD FAILED ===", 'ERROR');
-        
-        echo json_encode([
-            'success' => false, 
-            'message' => 'Upload failed',
-            'error' => $uploadError ? $uploadError['message'] : 'Unknown error',
-            'debug' => [
-                'tmp_name' => $_FILES['pdfFile']['tmp_name'],
-                'target' => $uploadFile,
-                'dir_writable' => is_writable($uploadDir)
-            ]
-        ]);
+    }
+
+    // Handle PDF analysis
+    if (isset($_POST['action']) && $_POST['action'] === 'analyze') {
+        logMessage("=== PDF ANALYSIS STARTED ===", 'ANALYZE');
+        $filename = $_POST['filename'] ?? '';
+
+        logMessage("Analysis request for file: $filename", 'ANALYZE');
+
+        $inputFile = $uploadDir . '/' . $filename;
+
+        if (!file_exists($inputFile)) {
+            logMessage("ERROR: Input file not found: $inputFile", 'ERROR');
+            echo json_encode(['success' => false, 'message' => 'File not found']);
+            exit;
+        }
+
+        $startTime = microtime(true);
+        $command = "pdfinfo \"$inputFile\" 2>&1";
+
+        logMessage("Executing analysis command: $command", 'ANALYZE');
+        exec($command, $output, $returnCode);
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        logMessage("Analysis executed in {$executionTime}ms with return code: $returnCode", 'ANALYZE');
+        logMessage("Analysis output length: " . strlen(implode("\n", $output)) . " characters", 'ANALYZE');
+
+        if ($returnCode === 0) {
+            $outputText = implode("\n", $output);
+            logMessage("SUCCESS: Analysis completed", 'ANALYZE');
+            logMessage("Analysis preview: " . substr($outputText, 0, 200) . "...", 'ANALYZE');
+            logMessage("=== PDF ANALYSIS COMPLETED SUCCESSFULLY ===", 'ANALYZE');
+
+            echo json_encode([
+                'success' => true,
+                'analysis' => $outputText,
+                'executionTime' => $executionTime
+            ]);
+        } else {
+            logMessage("ERROR: Analysis failed with return code: $returnCode", 'ERROR');
+            logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Analysis failed: ' . implode(' ', $output)
+            ]);
+        }
         exit;
     }
 }
 
-function convertPdf($filename, $format, $dpi, $uploadDir, $outputDir) {
-    logMessage("=== PDF CONVERSION STARTED ===", 'CONVERT');
-    logMessage("Conversion attempt: $filename to $format at {$dpi}dpi", 'CONVERT');
-    logMessage("Input directory: $uploadDir", 'CONVERT');
-    logMessage("Output directory: $outputDir", 'CONVERT');
+// Log application initialization (only for GET requests)
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    logMessage("=== PDF Processor Application Started ===");
+    logMessage("PHP Version: " . PHP_VERSION);
+    logMessage("Current working directory: " . __DIR__);
+    logMessage("Server info: " . $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown');
+    logMessage("Request method: " . $_SERVER['REQUEST_METHOD'] ?? 'Unknown');
+    logMessage("Request URI: " . $_SERVER['REQUEST_URI'] ?? 'Unknown');
 
-    $inputPath = $uploadDir . '/' . $filename;
-    if (!file_exists($inputPath)) {
-        logMessage("FAILED: Input file not found: $inputPath", 'ERROR');
-        logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
-        return ['success' => false, 'message' => 'Input file not found'];
-    }
-
-    logMessage("Input file exists, size: " . filesize($inputPath) . " bytes", 'CONVERT');
-    
-    $basename = pathinfo($filename, PATHINFO_FILENAME);
-    $outputPath = $outputDir . '/' . $basename . '.' . $format;
-    
-    logMessage("Output path: $outputPath", 'CONVERT');
-    
-    $cmd = "gs -dNOPAUSE -dBATCH -sDEVICE={$format} -r{$dpi} -sOutputFile=\"{$outputPath}\" \"{$inputPath}\" 2>&1";
-    logMessage("Conversion command: $cmd", 'CONVERT');
-    
-    $startTime = microtime(true);
-    $output = shell_exec($cmd);
-    $endTime = microtime(true);
-    $executionTime = round(($endTime - $startTime) * 1000, 2); // milliseconds
-    
-    logMessage("Command execution time: {$executionTime}ms", 'CONVERT');
-    logMessage("Command output: " . ($output ?: 'No output'), 'CONVERT');
-    
-    if (file_exists($outputPath)) {
-        $outputSize = filesize($outputPath);
-        logMessage("SUCCESS: Conversion successful", 'CONVERT');
-        logMessage("Output file size: $outputSize bytes", 'CONVERT');
-        logMessage("=== PDF CONVERSION COMPLETED ===", 'CONVERT');
-        return [
-            'success' => true, 
-            'filename' => basename($outputPath),
-            'size' => $outputSize,
-            'executionTime' => $executionTime . 'ms'
-        ];
-    } else {
-        logMessage("FAILED: Conversion failed - output file not created", 'ERROR');
-        logMessage("Expected output: $outputPath", 'ERROR');
-        logMessage("Ghostscript output: " . ($output ?: 'No output'), 'ERROR');
-        logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
-        return [
-            'success' => false, 
-            'message' => 'Conversion failed',
-            'error' => $output,
-            'command' => $cmd
-        ];
-    }
+    // Log existing files in directories
+    $uploadFiles = glob($uploadDir . '/*');
+    $outputFiles = glob($outputDir . '/*');
+    logMessage("Files in upload directory: " . count($uploadFiles) . " files");
+    logMessage("Files in output directory: " . count($outputFiles) . " files");
 }
-
-function analyzePdf($filename, $uploadDir) {
-    logMessage("=== PDF ANALYSIS STARTED ===", 'ANALYZE');
-    logMessage("Analyzing file: $filename", 'ANALYZE');
-    
-    $inputPath = $uploadDir . '/' . $filename;
-    $absoluteInputPath = realpath($uploadDir) . '/' . $filename;
-    
-    logMessage("Input path: $inputPath", 'ANALYZE');
-    logMessage("Absolute path: $absoluteInputPath", 'ANALYZE');
-    
-    if (!file_exists($inputPath)) {
-        logMessage("FAILED: File not found for analysis: $inputPath", 'ERROR');
-        logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
-        return ['success' => false, 'message' => 'File not found'];
-    }
-
-    $fileSize = filesize($inputPath);
-    logMessage("File size: $fileSize bytes", 'ANALYZE');
-    
-    $startTime = microtime(true);
-    $cmd = "pdfinfo \"$absoluteInputPath\" 2>&1";
-    logMessage("Analysis command: $cmd", 'ANALYZE');
-    
-    $output = shell_exec($cmd);
-    $endTime = microtime(true);
-    $executionTime = round(($endTime - $startTime) * 1000, 2);
-    
-    logMessage("Analysis execution time: {$executionTime}ms", 'ANALYZE');
-    logMessage("Analysis output length: " . strlen($output) . " characters", 'ANALYZE');
-    
-    if ($output) {
-        logMessage("SUCCESS: PDF analysis completed", 'ANALYZE');
-        logMessage("Analysis result preview: " . substr(str_replace("\n", " ", $output), 0, 200) . "...", 'ANALYZE');
-        logMessage("=== PDF ANALYSIS COMPLETED ===", 'ANALYZE');
-        return [
-            'success' => true, 
-            'info' => $output,
-            'executionTime' => $executionTime . 'ms',
-            'fileSize' => $fileSize
-        ];
-    } else {
-        logMessage("FAILED: PDF analysis returned no output", 'ERROR');
-        logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
-        return [
-            'success' => false, 
-            'message' => 'Analysis failed - no output',
-            'command' => $cmd
-        ];
-    }
-}
-
-function downloadFile($filename, $outputDir) {
-    logMessage("=== FILE DOWNLOAD STARTED ===", 'DOWNLOAD');
-    logMessage("Download request for: $filename", 'DOWNLOAD');
-    
-    $filePath = $outputDir . '/' . $filename;
-    logMessage("File path: $filePath", 'DOWNLOAD');
-    
-    if (!file_exists($filePath)) {
-        logMessage("FAILED: Download file not found: $filePath", 'ERROR');
-        logMessage("=== FILE DOWNLOAD FAILED ===", 'DOWNLOAD');
-        http_response_code(404);
-        echo "File not found";
-        return;
-    }
-
-    $fileSize = filesize($filePath);
-    $mimeType = mime_content_type($filePath);
-    
-    logMessage("File size: $fileSize bytes", 'DOWNLOAD');
-    logMessage("MIME type: $mimeType", 'DOWNLOAD');
-    logMessage("Starting file download...", 'DOWNLOAD');
-
-    header('Content-Type: ' . $mimeType);
-    header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
-    header('Content-Length: ' . $fileSize);
-    
-    $startTime = microtime(true);
-    readfile($filePath);
-    $endTime = microtime(true);
-    $transferTime = round(($endTime - $startTime) * 1000, 2);
-    
-    logMessage("SUCCESS: File download completed in {$transferTime}ms", 'DOWNLOAD');
-    logMessage("=== FILE DOWNLOAD COMPLETED ===", 'DOWNLOAD');
-}
-
-// Log session completion
-logMessage("=== PDF Processor PHP Section Completed ===");
 ?>
-  <!-- Header -->
-  <rect width="1000" height="60" fill="#e74c3c"/>
-  <text x="20" y="30" class="header" fill="white">📄 PDF Processor</text>
-  <text x="20" y="48" fill="#fadbd8" font-size="12px">Convert PDFs to PNG/JPG/SVG • Extract metadata</text>
 
-  <!-- Control Panel -->
-  <rect x="20" y="80" width="960" height="120" class="panel" stroke-width="1" rx="5"/>
+    <path fill="#e74c3c" d="M0 0h1000v60H0z"/>
+    <text x="20" y="30" style="fill:#e74c3c;font-size:20px;font-weight:700">📄 PDF Processor</text>
+    <text x="20" y="48" fill="#fadbd8" font-size="12">Convert PDFs to PNG/JPG/SVG • Extract metadata</text>
+    <rect width="960" height="120" x="20" y="80" rx="5" style="fill:#f8f9fa;stroke:#dee2e6"/>
+    <text x="40" y="105" fill="#495057" font-size="12">PDF File:</text>
+    <foreignObject width="300" height="25" x="40" y="110">
+        <xhtml:input id="selectedFile" accept=".pdf" onchange="handleFileSelect()" style="width:100%;height:100%;padding:2px;border-radius:3px;border:1px solid #ced4da;font-size:10px" type="file"/>
+    </foreignObject>
+    <text x="40" y="135" fill="#495057" font-size="12">Convert to:</text>
+    <foreignObject width="50" height="20" x="120" y="140">
+        <xhtml:button onclick="convert('png')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            PNG
+        </xhtml:button>
+    </foreignObject>
+    <foreignObject width="50" height="20" x="180" y="140">
+        <xhtml:button onclick="convert('jpg')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            JPG
+        </xhtml:button>
+    </foreignObject>
+    <foreignObject width="50" height="20" x="240" y="140">
+        <xhtml:button onclick="convert('svg')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            SVG
+        </xhtml:button>
+    </foreignObject>
+    <text x="310" y="135" fill="#495057" font-size="12">DPI:</text>
+    <foreignObject width="60" height="20" x="310" y="140">
+        <xhtml:input id="dpiInput" max="600" min="72" style="width:100%;height:100%;padding:2px;border:1px solid #ced4da;border-radius:2px;font-size:10px" type="number" value="300"/>
+    </foreignObject>
+    <foreignObject width="60" height="20" x="380" y="140">
+        <xhtml:button onclick="analyze()" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            Analyze
+        </xhtml:button>
+    </foreignObject>
 
-  <!-- File Selection -->
-  <text x="40" y="105" font-size="12px" fill="#495057">PDF File:</text>
-  <foreignObject x="40" y="110" width="300" height="25">
-    <xhtml:input type="file" id="selectedFile" accept=".pdf" onchange="handleFileSelect()" style="width:100%; height:100%; padding:2px; border-radius:3px; border:1px solid #ced4da; font-size:10px;"/>
-  </foreignObject>
+    <text id="status" x="40" y="180" fill="#28a745" font-size="11">Ready</text>
+    <rect width="960" height="400" x="20" y="220" fill="#fff" stroke="#dee2e6" rx="5"/>
+    <text x="40" y="245" fill="#495057" font-size="14" font-weight="bold">Results</text>
+    <text id="results" x="40" y="210" fill="#6c757d" font-size="11">Process a file to see results</text>
+    <text x="40" y="650" fill="#495057" font-size="12">Sample files (click to select):</text>
 
-  <!-- Convert Buttons -->
-  <text x="40" y="135" font-size="12px" fill="#495057">Convert to:</text>
-
-  <foreignObject x="120" y="140" width="50" height="20">
-    <xhtml:button onclick="convert('png')" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:11px;">PNG</xhtml:button>
-  </foreignObject>
-
-  <foreignObject x="180" y="140" width="50" height="20">
-    <xhtml:button onclick="convert('jpg')" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:11px;">JPG</xhtml:button>
-  </foreignObject>
-
-  <foreignObject x="240" y="140" width="50" height="20">
-    <xhtml:button onclick="convert('svg')" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:11px;">SVG</xhtml:button>
-  </foreignObject>
-
-  <!-- DPI Selection -->
-  <text x="310" y="135" font-size="12px" fill="#495057">DPI:</text>
-  <foreignObject x="310" y="140" width="60" height="20">
-    <xhtml:input type="number" id="dpiInput" value="300" min="72" max="600" style="width:100%; height:100%; padding:2px; border:1px solid #ced4da; border-radius:2px; font-size:10px;"/>
-  </foreignObject>
-
-  <!-- Analyze Button -->
-  <foreignObject x="380" y="140" width="60" height="20">
-    <xhtml:button onclick="analyze()" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:11px;">Analyze</xhtml:button>
-  </foreignObject>
-
-  <!-- Status -->
-  <text x="40" y="180" font-size="11px" fill="#28a745" id="status">Ready</text>
-
-  <!-- Results Area -->
-  <rect x="20" y="220" width="960" height="400" fill="#ffffff" stroke="#dee2e6" stroke-width="1" rx="5"/>
-  <text x="40" y="245" font-size="14px" fill="#495057" font-weight="bold">Results</text>
-  <text x="40" y="210" font-size="11px" fill="#6c757d" id="results">Process a file to see results</text>
-
-  <!-- Download Button Area (initially hidden) -->
-  <foreignObject x="40" y="270" width="200" height="35" id="downloadButtonArea" style="display:none;">
-    <xhtml:button id="downloadBtn" onclick="downloadCurrentFile()" style="width:100%; height:100%; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px; padding:8px; font-weight:bold;">Download File</xhtml:button>
-  </foreignObject>
-
-  <!-- Sample Files -->
-  <text x="40" y="650" font-size="12px" fill="#495057">Sample files (click to select):</text>
-  <foreignObject x="40" y="660" width="100" height="20">
-    <xhtml:button onclick="selectSample('sample1.pdf')" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:10px;">sample1.pdf</xhtml:button>
-  </foreignObject>
-
-  <foreignObject x="150" y="660" width="100" height="20">
-    <xhtml:button onclick="selectSample('sample2.pdf')" style="width:100%; height:100%; background:#e74c3c; color:white; border:none; border-radius:2px; cursor:pointer; font-size:10px;">sample2.pdf</xhtml:button>
-  </foreignObject>
-
-  <script><![CDATA[
+    <script>
+        <![CDATA[
     let currentFile = '';
     
     function handleFileSelect() {
@@ -505,5 +406,6 @@ ${JSON.stringify(data.info, null, 2)}`;
           alert('Download failed: ' + error.message);
         });
     }
-  ]]></script>
+  ]]>
+    </script>
 </svg>
