@@ -1,3 +1,4 @@
+
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml"  width="1024" height="800" viewBox="0 0 1024 800">
   <title>PDF Processor PWA</title>
   <desc>Advanced PDF conversion and analysis tool</desc>
@@ -16,77 +17,29 @@
 
     <?php
 // PDF Processor - Advanced PHP+SVG PWA with PDF conversion and analysis
-
-// Enhanced logging function
-function logMessage($message, $level = 'INFO') {
-    $timestamp = date('Y-m-d H:i:s');
-    $logEntry = "[$timestamp] [$level] $message\n";
-    file_put_contents(__DIR__ . '/debug.log', $logEntry, FILE_APPEND);
-}
-
-// Initialize logging
-logMessage("=== PDF Processor Application Started ===");
-logMessage("PHP Version: " . PHP_VERSION);
-logMessage("Current working directory: " . __DIR__);
-logMessage("Server info: " . $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown');
-logMessage("Request method: " . $_SERVER['REQUEST_METHOD'] ?? 'Unknown');
-logMessage("Request URI: " . $_SERVER['REQUEST_URI'] ?? 'Unknown');
-
 $uploadDir = __DIR__ . '/uploads';
 $outputDir = __DIR__ . '/output';
-
-logMessage("Checking directories...");
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0755, true);
-    logMessage("Created upload directory: $uploadDir");
-} else {
-    logMessage("Upload directory exists: $uploadDir");
-}
-
-if (!is_dir($outputDir)) {
-    mkdir($outputDir, 0755, true);
-    logMessage("Created output directory: $outputDir");
-} else {
-    logMessage("Output directory exists: $outputDir");
-}
-
-// Log existing files in directories
-$uploadFiles = glob($uploadDir . '/*');
-$outputFiles = glob($outputDir . '/*');
-logMessage("Files in upload directory: " . count($uploadFiles) . " files");
-logMessage("Files in output directory: " . count($outputFiles) . " files");
+if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+if (!is_dir($outputDir)) mkdir($outputDir, 0755, true);
 
 // Handle file upload
 if (isset($_FILES['pdfFile'])) {
-    logMessage("=== FILE UPLOAD STARTED ===", 'UPLOAD');
-    logMessage("Upload attempt initiated", 'UPLOAD');
-    logMessage("FILES data: " . print_r($_FILES['pdfFile'], true), 'UPLOAD');
-    logMessage("POST data keys: " . implode(', ', array_keys($_POST)), 'UPLOAD');
-    logMessage("File error code: " . $_FILES['pdfFile']['error'], 'UPLOAD');
-    
+    file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " - Upload attempt\n", FILE_APPEND);
+    file_put_contents(__DIR__ . '/debug.log', "FILES data: " . print_r($_FILES['pdfFile'], true) . "\n", FILE_APPEND);
+
     $uploadFile = $uploadDir . '/' . basename($_FILES['pdfFile']['name']);
     $absolutePath = realpath($uploadDir) . '/' . basename($_FILES['pdfFile']['name']);
-    
-    logMessage("Target path: $uploadFile", 'UPLOAD');
-    logMessage("Absolute path: $absolutePath", 'UPLOAD');
-    logMessage("Original filename: " . $_FILES['pdfFile']['name'], 'UPLOAD');
-    logMessage("File type: " . $_FILES['pdfFile']['type'], 'UPLOAD');
-    logMessage("File size: " . $_FILES['pdfFile']['size'] . " bytes", 'UPLOAD');
-    logMessage("Temp file: " . $_FILES['pdfFile']['tmp_name'], 'UPLOAD');
+    file_put_contents(__DIR__ . '/debug.log', "Target path: $uploadFile\n", FILE_APPEND);
+    file_put_contents(__DIR__ . '/debug.log', "Absolute path: $absolutePath\n", FILE_APPEND);
 
     if (move_uploaded_file($_FILES['pdfFile']['tmp_name'], $uploadFile)) {
         // Verify file actually exists
         $fileExists = file_exists($uploadFile);
         $fileSize = $fileExists ? filesize($uploadFile) : 0;
-        $filePerms = $fileExists ? substr(sprintf('%o', fileperms($uploadFile)), -4) : 'N/A';
 
-        logMessage("SUCCESS: File uploaded successfully", 'UPLOAD');
-        logMessage("Final file path: $uploadFile", 'UPLOAD');
-        logMessage("File exists check: " . ($fileExists ? 'YES' : 'NO'), 'UPLOAD');
-        logMessage("File size: $fileSize bytes", 'UPLOAD');
-        logMessage("File permissions: $filePerms", 'UPLOAD');
-        logMessage("File is readable: " . (is_readable($uploadFile) ? 'YES' : 'NO'), 'UPLOAD');
-        logMessage("=== FILE UPLOAD COMPLETED SUCCESSFULLY ===", 'UPLOAD');
+        file_put_contents(__DIR__ . '/debug.log', "SUCCESS: File uploaded to $uploadFile\n", FILE_APPEND);
+        file_put_contents(__DIR__ . '/debug.log', "File exists check: " . ($fileExists ? 'YES' : 'NO') . "\n", FILE_APPEND);
+        file_put_contents(__DIR__ . '/debug.log', "File size: $fileSize bytes\n", FILE_APPEND);
 
         // Return JSON response and exit immediately
         echo json_encode([
@@ -95,178 +48,121 @@ if (isset($_FILES['pdfFile'])) {
             'absolutePath' => $absolutePath,
             'fileExists' => $fileExists,
             'fileSize' => $fileSize,
-            'permissions' => $filePerms,
-            'message' => 'File uploaded successfully'
+            'message' => "File uploaded to: $absolutePath"
         ]);
         exit;
     } else {
-        $uploadError = error_get_last();
-        logMessage("FAILED: Upload failed", 'ERROR');
-        logMessage("Temp file: " . $_FILES['pdfFile']['tmp_name'], 'ERROR');
-        logMessage("Target file: $uploadFile", 'ERROR');
-        logMessage("Upload directory writable: " . (is_writable($uploadDir) ? 'YES' : 'NO'), 'ERROR');
-        logMessage("Upload directory permissions: " . substr(sprintf('%o', fileperms($uploadDir)), -4), 'ERROR');
-        logMessage("Last PHP error: " . ($uploadError ? print_r($uploadError, true) : 'None'), 'ERROR');
-        logMessage("=== FILE UPLOAD FAILED ===", 'ERROR');
-        
-        echo json_encode([
-            'success' => false, 
-            'message' => 'Upload failed',
-            'error' => $uploadError ? $uploadError['message'] : 'Unknown error',
-            'debug' => [
-                'tmp_name' => $_FILES['pdfFile']['tmp_name'],
-                'target' => $uploadFile,
-                'dir_writable' => is_writable($uploadDir)
-            ]
-        ]);
+        file_put_contents(__DIR__ . '/debug.log', "FAILED: Upload failed - tmp: " . $_FILES['pdfFile']['tmp_name'] . "\n", FILE_APPEND);
+        echo json_encode(['success' => false, 'error' => 'Upload failed']);
         exit;
+    }
+}
+
+if (isset($_GET['action'])) {
+    switch ($_GET['action']) {
+        case 'convert':
+            $filename = $_GET['file'] ?? '';
+            $format = $_GET['format'] ?? 'png';
+            $dpi = $_GET['dpi'] ?? 300;
+            echo json_encode(convertPdf($filename, $format, $dpi, $uploadDir, $outputDir));
+            exit;
+        case 'analyze':
+            $filename = $_GET['file'] ?? '';
+            echo json_encode(analyzePdf($filename, $uploadDir));
+            exit;
+        case 'download':
+            $filename = $_GET['file'] ?? '';
+            downloadFile($filename, $outputDir);
+            exit;
     }
 }
 
 function convertPdf($filename, $format, $dpi, $uploadDir, $outputDir) {
-    logMessage("=== PDF CONVERSION STARTED ===", 'CONVERT');
-    logMessage("Conversion attempt: $filename to $format at {$dpi}dpi", 'CONVERT');
-    logMessage("Input directory: $uploadDir", 'CONVERT');
-    logMessage("Output directory: $outputDir", 'CONVERT');
+    file_put_contents(__DIR__ . '/debug.log', date('Y-m-d H:i:s') . " - Conversion attempt: $filename to $format\n", FILE_APPEND);
 
     $inputPath = $uploadDir . '/' . $filename;
+    $absoluteInputPath = realpath($uploadDir) . '/' . $filename;
     if (!file_exists($inputPath)) {
-        logMessage("FAILED: Input file not found: $inputPath", 'ERROR');
-        logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
-        return ['success' => false, 'message' => 'Input file not found'];
+        file_put_contents(__DIR__ . '/debug.log', "FAILED: Input file not found: $inputPath\n", FILE_APPEND);
+        return ['success' => false, 'message' => 'File not found'];
     }
 
-    logMessage("Input file exists, size: " . filesize($inputPath) . " bytes", 'CONVERT');
-    
-    $basename = pathinfo($filename, PATHINFO_FILENAME);
-    $outputPath = $outputDir . '/' . $basename . '.' . $format;
-    
-    logMessage("Output path: $outputPath", 'CONVERT');
-    
-    $cmd = "gs -dNOPAUSE -dBATCH -sDEVICE={$format} -r{$dpi} -sOutputFile=\"{$outputPath}\" \"{$inputPath}\" 2>&1";
-    logMessage("Conversion command: $cmd", 'CONVERT');
-    
-    $startTime = microtime(true);
-    $output = shell_exec($cmd);
-    $endTime = microtime(true);
-    $executionTime = round(($endTime - $startTime) * 1000, 2); // milliseconds
-    
-    logMessage("Command execution time: {$executionTime}ms", 'CONVERT');
-    logMessage("Command output: " . ($output ?: 'No output'), 'CONVERT');
-    
+    $outputName = pathinfo($filename, PATHINFO_FILENAME);
+    $outputPath = $outputDir . '/' . $outputName . '.' . $format;
+    $absoluteOutputPath = realpath($outputDir) . '/' . $outputName . '.' . $format;
+
+    $cmd = "convert -density $dpi '$inputPath'[0] '$outputPath' 2>&1";
+    file_put_contents(__DIR__ . '/debug.log', "Conversion command: $cmd\n", FILE_APPEND);
+    shell_exec($cmd);
+
     if (file_exists($outputPath)) {
-        $outputSize = filesize($outputPath);
-        logMessage("SUCCESS: Conversion successful", 'CONVERT');
-        logMessage("Output file size: $outputSize bytes", 'CONVERT');
-        logMessage("=== PDF CONVERSION COMPLETED ===", 'CONVERT');
+        file_put_contents(__DIR__ . '/debug.log', "SUCCESS: Conversion successful: $outputPath\n", FILE_APPEND);
         return [
-            'success' => true, 
-            'filename' => basename($outputPath),
-            'size' => $outputSize,
-            'executionTime' => $executionTime . 'ms'
+            'success' => true,
+            'output' => $outputName . '.' . $format,
+            'absoluteInputPath' => $absoluteInputPath,
+            'absoluteOutputPath' => $absoluteOutputPath,
+            'message' => "File converted to: $absoluteOutputPath"
         ];
     } else {
-        logMessage("FAILED: Conversion failed - output file not created", 'ERROR');
-        logMessage("Expected output: $outputPath", 'ERROR');
-        logMessage("Ghostscript output: " . ($output ?: 'No output'), 'ERROR');
-        logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
-        return [
-            'success' => false, 
-            'message' => 'Conversion failed',
-            'error' => $output,
-            'command' => $cmd
-        ];
+        file_put_contents(__DIR__ . '/debug.log', "FAILED: Conversion failed: $outputPath\n", FILE_APPEND);
+        return ['success' => false, 'message' => 'Conversion failed'];
     }
 }
 
 function analyzePdf($filename, $uploadDir) {
-    logMessage("=== PDF ANALYSIS STARTED ===", 'ANALYZE');
-    logMessage("Analyzing file: $filename", 'ANALYZE');
-    
     $inputPath = $uploadDir . '/' . $filename;
     $absoluteInputPath = realpath($uploadDir) . '/' . $filename;
-    
-    logMessage("Input path: $inputPath", 'ANALYZE');
-    logMessage("Absolute path: $absoluteInputPath", 'ANALYZE');
-    
-    if (!file_exists($inputPath)) {
-        logMessage("FAILED: File not found for analysis: $inputPath", 'ERROR');
-        logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
-        return ['success' => false, 'message' => 'File not found'];
+    if (!file_exists($inputPath)) return ['success' => false, 'message' => 'File not found'];
+
+    $output = shell_exec("pdfinfo '$inputPath' 2>&1");
+    $info = ['filename' => $filename, 'size' => filesize($inputPath)];
+
+    if ($output) {
+        foreach (explode("\n", $output) as $line) {
+            if (strpos($line, ':') !== false) {
+                list($key, $value) = array_map('trim', explode(':', $line, 2));
+                $info[$key] = $value;
+            }
+        }
     }
 
-    $fileSize = filesize($inputPath);
-    logMessage("File size: $fileSize bytes", 'ANALYZE');
-    
-    $startTime = microtime(true);
-    $cmd = "pdfinfo \"$absoluteInputPath\" 2>&1";
-    logMessage("Analysis command: $cmd", 'ANALYZE');
-    
-    $output = shell_exec($cmd);
-    $endTime = microtime(true);
-    $executionTime = round(($endTime - $startTime) * 1000, 2);
-    
-    logMessage("Analysis execution time: {$executionTime}ms", 'ANALYZE');
-    logMessage("Analysis output length: " . strlen($output) . " characters", 'ANALYZE');
-    
-    if ($output) {
-        logMessage("SUCCESS: PDF analysis completed", 'ANALYZE');
-        logMessage("Analysis result preview: " . substr(str_replace("\n", " ", $output), 0, 200) . "...", 'ANALYZE');
-        logMessage("=== PDF ANALYSIS COMPLETED ===", 'ANALYZE');
-        return [
-            'success' => true, 
-            'info' => $output,
-            'executionTime' => $executionTime . 'ms',
-            'fileSize' => $fileSize
-        ];
-    } else {
-        logMessage("FAILED: PDF analysis returned no output", 'ERROR');
-        logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
-        return [
-            'success' => false, 
-            'message' => 'Analysis failed - no output',
-            'command' => $cmd
-        ];
-    }
+    return [
+        'success' => true,
+        'info' => $info,
+        'absoluteInputPath' => $absoluteInputPath,
+        'message' => "File analyzed: $absoluteInputPath"
+    ];
 }
 
 function downloadFile($filename, $outputDir) {
-    logMessage("=== FILE DOWNLOAD STARTED ===", 'DOWNLOAD');
-    logMessage("Download request for: $filename", 'DOWNLOAD');
-    
     $filePath = $outputDir . '/' . $filename;
-    logMessage("File path: $filePath", 'DOWNLOAD');
-    
     if (!file_exists($filePath)) {
-        logMessage("FAILED: Download file not found: $filePath", 'ERROR');
-        logMessage("=== FILE DOWNLOAD FAILED ===", 'DOWNLOAD');
         http_response_code(404);
-        echo "File not found";
-        return;
+        echo 'File not found';
+        exit;
     }
 
     $fileSize = filesize($filePath);
     $mimeType = mime_content_type($filePath);
-    
-    logMessage("File size: $fileSize bytes", 'DOWNLOAD');
-    logMessage("MIME type: $mimeType", 'DOWNLOAD');
-    logMessage("Starting file download...", 'DOWNLOAD');
 
     header('Content-Type: ' . $mimeType);
-    header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Content-Length: ' . $fileSize);
-    
-    $startTime = microtime(true);
+
     readfile($filePath);
-    $endTime = microtime(true);
-    $transferTime = round(($endTime - $startTime) * 1000, 2);
-    
-    logMessage("SUCCESS: File download completed in {$transferTime}ms", 'DOWNLOAD');
-    logMessage("=== FILE DOWNLOAD COMPLETED ===", 'DOWNLOAD');
+    exit;
 }
 
-// Log session completion
-logMessage("=== PDF Processor PHP Section Completed ===");
+function formatBytes($bytes, $precision = 2) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+    for ($i = 0; $bytes > 1024; $i++) {
+        $bytes /= 1024;
+    }
+
+    return round($bytes, $precision) . ' ' . $units[$i];
+}
 ?>
   <!-- Header -->
   <rect width="1000" height="60" fill="#e74c3c"/>

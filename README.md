@@ -673,11 +673,118 @@ if (isset($_FILES['pdf'])) {
 - [ ] Authentication system
 - [ ] Multi-language support
 
+## 📦 Generowanie dystrybucji
+
+### Automatyczne buildowanie pakietów
+
+Użyj skryptu `build-dist.sh` aby wygenerować pakiety dla wszystkich platform:
+
+```bash
+# Podstawowe buildowanie
+./build-dist.sh
+
+# Z konkretną wersją
+VERSION=2.0.0 ./build-dist.sh
+```
+
+### Dostępne pakiety dystrybucji:
+
+| Pakiet | Zawiera | Przeznaczenie |
+|--------|---------|---------------|
+| **Windows** (`*.zip`) | `run.bat`, `install.bat`, pliki core | Użytkownicy Windows |
+| **Unix** (`*.tar.gz`) | `run.sh`, `install.sh`, pliki core | Linux/macOS |
+| **Docker** (`*.tar.gz`) | `Dockerfile`, `docker-compose.yml`, `nginx.conf` | Deployment kontenerowy |
+| **Portable** (`*.zip`) | `portable.php`, README | Single-file launcher |
+| **Electron** (`*.tar.gz`) | Pełna aplikacja desktop | Aplikacja desktop |
+
+### Instalacja z pakietów:
+
+**Windows:**
+```batch
+# Rozpakuj pakiet
+unzip svg-php-launcher-v1.0.0-windows.zip
+cd windows
+
+# Uruchom instalator
+install.bat
+```
+
+**Linux/macOS:**
+```bash
+# Rozpakuj pakiet
+tar -xzf svg-php-launcher-v1.0.0-unix.tar.gz
+cd unix
+
+# Uruchom instalator
+./install.sh
+```
+
+**Docker:**
+```bash
+# Rozpakuj pakiet
+tar -xzf svg-php-launcher-v1.0.0-docker.tar.gz
+cd docker
+
+# Uruchom instalator Docker
+./docker-install.sh
+```
+
+## 🧪 Testowanie
+
+Użyj wbudowanego systemu testów:
+
+```bash
+# Uruchom wszystkie testy
+./test.sh
+
+# Testuj konkretny aspekt
+php -l *.php  # Tylko składnia PHP
+xmllint --noout *.svg  # Tylko pliki SVG
+```
+
+## 🔧 Troubleshooting
+
+### Częste problemy:
+
+**Problem:** `PHP not found`
+```bash
+# Ubuntu/Debian
+sudo apt install php php-cli
+
+# macOS
+brew install php
+
+# Windows
+# Pobierz z https://windows.php.net/download/
+```
+
+**Problem:** `Port already in use`
+```bash
+# Użyj innego portu
+php portable.php 8080
+
+# Lub zatrzymaj inne serwery
+sudo lsof -ti:8097 | xargs kill -9
+```
+
+**Problem:** `Permission denied`
+```bash
+# Linux/macOS - napraw uprawnienia
+chod +x run.sh
+chmod +x *.sh
+```
+
+**Problem:** SVG nie ładuje się
+- Sprawdź składnię XML: `xmllint --noout plik.svg`
+- Sprawdź router PHP: `php -l router.php`
+- Sprawdź logi: `tail -f debug.log`
+
 ## 📝 Licencja
 
 Ten projekt jest dostępny na licencji Apache 2.0. Zobacz plik [LICENSE](LICENSE) dla szczegółów.
 
-
 ---
 
-Made with ❤️ by the SVG+PHP community
+⭐ **Jeśli projekt Ci się podoba, zostaw gwiazdkę na GitHub!**
+
+📧 **Pytania i sugestie:** [Utwórz issue](https://github.com/your-repo/issues)ty
