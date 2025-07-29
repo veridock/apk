@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG App Launcher</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="launcher-container">
+        <header class="launcher-header">
+            <h1>SVG Application Launcher</h1>
+            <p>Launch SVG+PHP applications as desktop apps</p>
+        </header>
+
+        <main class="launcher-main">
+            <div class="welcome-section" id="welcome-section">
+                <div class="launch-area">
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="drop-content">
+                            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14,2 14,8 20,8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10,9 9,9 8,9"></polyline>
+                            </svg>
+                            <h3>Drop SVG file here</h3>
+                            <p>or</p>
+                            <button class="btn-primary" id="open-file-btn">Choose SVG File</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-files">
+                    <h3>Recent Applications</h3>
+                    <div class="recent-list" id="recent-list">
+                        <p class="no-recent">No recent applications</p>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>About SVG Apps</h3>
+                    <ul>
+                        <li>SVG files with embedded PHP and JavaScript</li>
+                        <li>Runs with local PHP-like server</li>
+                        <li>Supports .env configuration files</li>
+                        <li>Cross-platform desktop applications</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="app-view" id="app-view" style="display: none;">
+                <div class="app-toolbar">
+                    <button class="btn-secondary" id="back-btn">← Back to Launcher</button>
+                    <span class="app-title" id="app-title">SVG Application</span>
+                    <div class="app-controls">
+                        <button class="btn-icon" id="reload-btn" title="Reload">↻</button>
+                        <button class="btn-icon" id="devtools-btn" title="Developer Tools">⚙</button>
+                    </div>
+                </div>
+                <div class="app-content">
+                    <iframe id="app-frame" src="" frameborder="0"></iframe>
+                </div>
+            </div>
+        </main>
+
+        <footer class="launcher-footer">
+            <p>SVG App Launcher v1.0.0 | Powered by Electron</p>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

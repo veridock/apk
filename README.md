@@ -1,29 +1,28 @@
 # 🚀 SVG+PHP Universal Launcher
 
-Kompleksowe rozwiązanie do uruchamiania aplikacji SVG+PHP na dowolnej platformie z łatwą dystrybucją.
+Kompleksowe rozwiązanie do uruchamiania aplikacji SVG+PHP na dowolnej platformie z łatwą dystrybucją. Projekt umożliwia tworzenie interaktywnych aplikacji używających SVG jako interfejsu użytkownika z logiką PHP w tle.
 
 ## 📋 Spis treści
 
 - [Szybki start](#-szybki-start)
+- [Wymagania](#-wymagania)
 - [Instalacja](#-instalacja)
 - [Sposoby uruchomienia](#-sposoby-uruchomienia)
 - [Struktura projektu](#-struktura-projektu)
 - [Konfiguracja](#-konfiguracja)
 - [Deployment](#-deployment)
 - [Rozwój aplikacji](#-rozwój-aplikacji)
+- [Troubleshooting](#-troubleshooting)
 
 ## 🎯 Szybki start
 
 ### Opcja 1: Portable Launcher (najprostszy)
 ```bash
-# Pobierz tylko jeden plik
-wget https://raw.githubusercontent.com/your-repo/main/portable-run.php
-
-# Uruchom
-php portable-run.php
+# Uruchom bezpośrednio z katalogu projektu
+php portable.php
 
 # Lub na konkretnym porcie
-php portable-run.php 8080
+php portable.php 8080
 ```
 
 ### Opcja 2: Skrypty natywne
@@ -44,10 +43,20 @@ chmod +x run.sh
 docker-compose up -d
 ```
 
-## 💻 Instalacja
+## 💻 Wymagania
 
 ### Wymagania minimalne
-- PHP 7.4+ (z włączonym CLI)
+- PHP 8.0+ (zalecane 8.2+)
+- Rozszerzenia PHP: `gd`, `imagick` (opcjonalne dla przetwarzania grafiki)
+- Apache/Nginx (dla trybu produkcyjnego) lub wbudowany serwer PHP
+- Docker i Docker Compose (dla deployment z kontenerami)
+
+### Wymagania dla zaawansowanych funkcji
+- ImageMagick (dla konwersji PDF)
+- Ghostscript (dla renderowania PDF)
+- Poppler-utils (dla manipulacji PDF)
+
+## 📦 Instalacja
 - Opcjonalnie: ImageMagick (dla pdf-processor.svg)
 
 ### Windows
@@ -107,10 +116,10 @@ php -S localhost:8097 router.php
 ### 2. Tryb CLI (przetwarzanie batch)
 ```bash
 # Renderuj pojedynczy plik
-php router.php calculator.svg
+php index.php
 
-# Z parametrami
-php router.php calculator.svg CALCULATOR_TITLE="Mój Kalkulator" APP_VERSION="2.0"
+# Z parametrami środowiskowymi
+APP_TITLE="Moja Aplikacja" php index.php
 ```
 
 ### 3. Tryb produkcyjny (Apache/Nginx)
@@ -150,19 +159,20 @@ docker-compose --profile production up -d
 ## 📁 Struktura projektu
 
 ```
-svg-php-launcher/
-├── router.php           # Główny router PHP
-├── calculator.svg       # Przykład: kalkulator
-├── pdf-processor.svg    # Przykład: konwerter PDF
-├── .env                # Konfiguracja aplikacji
-├── run.bat        # Launcher dla Windows
-├── run.sh         # Launcher dla Linux/Mac
-├── portable-run.php # Jednoplikowy launcher
-├── docker-compose.yml  # Konfiguracja Docker
-├── Dockerfile         # Obraz Docker
-├── uploads/           # Folder na uploady (pdf-processor)
-├── output/           # Folder na wyniki konwersji
-└── README.md         # Dokumentacja
+veridock-apk/
+├── index.html           # Główny interfejs webowy
+├── index.php           # Backend PHP
+├── portable.php        # Jednoplikowy launcher
+├── router-temp.php     # Router tymczasowy
+├── .env               # Konfiguracja aplikacji
+├── run.bat           # Launcher dla Windows
+├── run.sh            # Launcher dla Linux/Mac
+├── docker-compose.sh # Skrypt Docker Compose
+├── Dockerfile        # Obraz Docker
+├── electron-launcher/ # Aplikacja Electron
+├── sample-calculator.svg # Przykład kalkulatora SVG
+├── LICENSE           # Licencja Apache 2.0
+└── README.md        # Dokumentacja
 ```
 
 ## ⚙️ Konfiguracja
