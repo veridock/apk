@@ -235,3 +235,125 @@ Apache 2.0 License - zobacz [LICENSE](LICENSE)
 ---
 
 Made with ❤️ using Electron + PHP + SVG
+
+
+
+### 🎯 Kluczowe funkcje:
+
+1. **Podwójne kliknięcie na SVG**
+   - Plik SVG otwiera się jako natywna aplikacja
+   - Zachowana możliwość podglądu jako obraz (prawy klik → "Otwórz za pomocą")
+
+2. **Integracja z systemem**
+   - Rejestracja jako handler dla plików .svg
+   - Ikona aplikacji generowana z SVG
+   - Menu kontekstowe w eksploratorze
+
+3. **Zarządzanie środowiskiem**
+   - Edytor .env wbudowany w aplikację
+   - Ładowanie zmiennych z folderu SVG lub profilu użytkownika
+   - Hot-reload po zmianach
+
+4. **PHP Backend**
+   - Automatyczne wykrywanie PHP w systemie
+   - Możliwość bundlowania PHP z aplikacją
+   - Izolowany serwer dla każdej instancji
+
+### 📦 Struktura projektu:
+
+```
+svg-php-electron-launcher/
+├── main.js                    # Główny proces Electron
+├── preload.js                # Skrypt preload dla bezpieczeństwa
+├── package.json              # Konfiguracja npm i build
+├── welcome.html              # Ekran powitalny
+├── env-editor.html          # Edytor zmiennych środowiskowych
+├── build.sh                 # Skrypt budowania dla wszystkich platform
+├── installer.nsh            # Konfiguracja instalatora Windows
+├── assets/                  # Ikony i zasoby
+│   ├── icon.png
+│   ├── icon.ico            # Windows
+│   └── icon.icns           # macOS
+└── README-ELECTRON.md      # Dokumentacja
+
+```
+
+
+
+### 🚀 Sposób działania:
+
+1. **Użytkownik klika 2x na plik .svg**
+2. **System uruchamia Electron Launcher**
+3. **Aplikacja:**
+   - Sprawdza PHP w systemie
+   - Ładuje zmienne z .env
+   - Uruchamia lokalny serwer PHP
+   - Renderuje SVG w oknie Electron
+
+### 💡 Instalacja i użycie:
+
+**Dla użytkowników końcowych:**
+```bash
+# Windows - pobierz installer
+SVG-PHP-Launcher-Setup-1.0.0.exe
+
+# macOS - pobierz DMG
+SVG-PHP-Launcher-1.0.0.dmg
+
+# Linux - AppImage
+chmod +x SVG-PHP-Launcher-1.0.0.AppImage
+./SVG-PHP-Launcher-1.0.0.AppImage
+```
+
+**Dla deweloperów:**
+```bash
+# Klonuj i uruchom
+git clone https://github.com/veridock/apk.git
+cd apk/electron
+npm install
+npm start
+
+# Build dla wszystkich platform
+./build.sh all
+```
+
+### 🔧 Zaawansowane opcje:
+
+1. **Bundlowanie PHP:**
+   - Aplikacja może zawierać PHP
+   - Nie wymaga instalacji PHP u użytkownika
+   - Rozmiar aplikacji ~100MB z PHP
+
+2. **Custom protokół URL:**
+   ```html
+   <a href="svg-php://open/calculator.svg">Otwórz kalkulator</a>
+   ```
+
+3. **API JavaScript w SVG:**
+   ```javascript
+   // Dostęp do API Electron z poziomu SVG
+   if (window.api) {
+       const envVars = await window.api.getEnvVars();
+       window.api.openSVGDirectory();
+   }
+   ```
+
+### ✅ Zalety tego rozwiązania:
+
+1. **Natywna integracja** - działa jak zwykła aplikacja desktop
+2. **Zachowany podgląd** - SVG nadal można oglądać jako obraz
+3. **Cross-platform** - Windows, macOS, Linux
+4. **Bezpieczeństwo** - izolowany kontekst, CSP
+5. **Łatwa dystrybucja** - instalatory dla każdej platformy
+6. **Developer friendly** - DevTools, hot-reload
+
+### 📊 Porównanie metod uruchamiania:
+
+| Metoda | Instalacja | Podgląd SVG | Natywność | Dystrybucja |
+|--------|------------|-------------|-----------|-------------|
+| PHP CLI | Wymaga PHP | ✅ Tak | ❌ Terminal | ⭐ |
+| Docker | Wymaga Docker | ✅ Tak | ❌ Kontener | ⭐⭐ |
+| Web Server | Wymaga serwera | ✅ Tak | ❌ Przeglądarka | ⭐⭐ |
+| **Electron** | **Standalone** | **✅ Tak** | **✅ Okno natywne** | **⭐⭐⭐⭐⭐** |
+
+Rozwiązanie Electron jest najlepsze dla użytkowników końcowych, którzy chcą po prostu kliknąć na plik SVG i mieć działającą aplikację, bez konieczności instalowania PHP czy konfigurowania serwerów.

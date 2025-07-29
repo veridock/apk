@@ -99,10 +99,18 @@ async function startPHPServer(svgPath) {
     
     // Create router dynamically
     const routerPath = path.join(app.getPath('temp'), 'svg-router.php');
+    
+    // Convert JavaScript object to PHP array syntax
+    const phpEnvVars = Object.entries(envVars)
+        .map(([key, value]) => `    '${key}' => '${value.toString().replace(/'/g, "\\'")}'`)
+        .join(',\n');
+    
     const routerContent = `<?php
 // Dynamic router for SVG+PHP Electron app
 $svgFile = '${svgPath.replace(/\\/g, '\\\\')}';
-$envVars = ${JSON.stringify(envVars)};
+$envVars = [
+${phpEnvVars}
+];
 
 // Set environment variables
 foreach ($envVars as $key => $value) {

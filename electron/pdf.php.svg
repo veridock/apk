@@ -1,0 +1,412 @@
+<?php
+// PDF Processor - Advanced PHP+SVG PWA with PDF conversion and analysis
+// CRITICAL: Handle ALL AJAX requests BEFORE any SVG output
+
+// Enhanced logging function
+function logMessage($message, $level = 'INFO') {
+    $timestamp = date('Y-m-d H:i:s');
+    $logEntry = "[$timestamp] [$level] $message\n";
+    file_put_contents(__DIR__ . '/debug.log', $logEntry, FILE_APPEND);
+}
+
+// Initialize directories
+$uploadDir = __DIR__ . '/uploads';
+$outputDir = __DIR__ . '/output';
+
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
+}
+if (!is_dir($outputDir)) {
+    mkdir($outputDir, 0755, true);
+}
+
+// Handle AJAX requests FIRST - before any SVG output
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Set JSON content type
+    header('Content-Type: application/json');
+
+    // Handle file upload
+    if (isset($_FILES['pdfFile'])) {
+        logMessage("=== FILE UPLOAD STARTED ===", 'UPLOAD');
+        logMessage("Upload attempt initiated", 'UPLOAD');
+        logMessage("FILES data: " . print_r($_FILES['pdfFile'], true), 'UPLOAD');
+
+        $uploadFile = $uploadDir . '/' . basename($_FILES['pdfFile']['name']);
+
+        logMessage("Target path: $uploadFile", 'UPLOAD');
+        logMessage("File size: " . $_FILES['pdfFile']['size'] . " bytes", 'UPLOAD');
+
+        if (move_uploaded_file($_FILES['pdfFile']['tmp_name'], $uploadFile)) {
+            $fileExists = file_exists($uploadFile);
+            $fileSize = $fileExists ? filesize($uploadFile) : 0;
+
+            logMessage("SUCCESS: File uploaded successfully", 'UPLOAD');
+            logMessage("Final file path: $uploadFile", 'UPLOAD');
+            logMessage("File exists check: " . ($fileExists ? 'YES' : 'NO'), 'UPLOAD');
+            logMessage("=== FILE UPLOAD COMPLETED SUCCESSFULLY ===", 'UPLOAD');
+
+            echo json_encode([
+                'success' => true,
+                'filename' => basename($_FILES['pdfFile']['name']),
+                'message' => 'File uploaded successfully'
+            ]);
+            exit;
+        } else {
+            logMessage("FAILED: Upload failed", 'ERROR');
+            logMessage("=== FILE UPLOAD FAILED ===", 'ERROR');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Upload failed'
+            ]);
+            exit;
+        }
+    }
+
+    // Handle PDF conversion
+    if (isset($_POST['action']) && $_POST['action'] === 'convert') {
+        logMessage("=== PDF CONVERSION STARTED ===", 'CONVERT');
+        $filename = $_POST['filename'] ?? '';
+        $format = $_POST['format'] ?? 'png';
+        $dpi = intval($_POST['dpi'] ?? 300);
+
+        logMessage("Convert request - File: $filename, Format: $format, DPI: $dpi", 'CONVERT');
+
+        $inputFile = $uploadDir . '/' . $filename;
+        $outputFile = $outputDir . '/' . pathinfo($filename, PATHINFO_FILENAME) . '_%d.' . $format;
+
+        if (!file_exists($inputFile)) {
+            logMessage("ERROR: Input file not found: $inputFile", 'ERROR');
+            echo json_encode(['success' => false, 'message' => 'File not found']);
+            exit;
+        }
+
+        $startTime = microtime(true);
+        $device = ($format === 'png') ? 'png16m' : 'jpeg';
+        $command = "gs -dNOPAUSE -dBATCH -sDEVICE=$device -r$dpi -sOutputFile=\"$outputFile\" \"$inputFile\" 2>&1";
+
+        logMessage("Executing command: $command", 'CONVERT');
+        exec($command, $output, $returnCode);
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        logMessage("Command executed in {$executionTime}ms with return code: $returnCode", 'CONVERT');
+        logMessage("Command output: " . implode("\n", $output), 'CONVERT');
+
+        if ($returnCode === 0) {
+            $outputFiles = glob(str_replace('%d', '*', $outputFile));
+            logMessage("SUCCESS: Generated " . count($outputFiles) . " output files", 'CONVERT');
+            logMessage("=== PDF CONVERSION COMPLETED SUCCESSFULLY ===", 'CONVERT');
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Conversion completed',
+                'files' => array_map('basename', $outputFiles),
+                'executionTime' => $executionTime
+            ]);
+        } else {
+            logMessage("ERROR: Conversion failed with return code: $returnCode", 'ERROR');
+            logMessage("=== PDF CONVERSION FAILED ===", 'CONVERT');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Conversion failed: ' . implode(' ', $output)
+            ]);
+        }
+        exit;
+    }
+
+    // Handle PDF analysis
+    if (isset($_POST['action']) && $_POST['action'] === 'analyze') {
+        logMessage("=== PDF ANALYSIS STARTED ===", 'ANALYZE');
+        $filename = $_POST['filename'] ?? '';
+
+        logMessage("Analysis request for file: $filename", 'ANALYZE');
+
+        $inputFile = $uploadDir . '/' . $filename;
+
+        if (!file_exists($inputFile)) {
+            logMessage("ERROR: Input file not found: $inputFile", 'ERROR');
+            echo json_encode(['success' => false, 'message' => 'File not found']);
+            exit;
+        }
+
+        $startTime = microtime(true);
+        $command = "pdfinfo \"$inputFile\" 2>&1";
+
+        logMessage("Executing analysis command: $command", 'ANALYZE');
+        exec($command, $output, $returnCode);
+        $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+        logMessage("Analysis executed in {$executionTime}ms with return code: $returnCode", 'ANALYZE');
+        logMessage("Analysis output length: " . strlen(implode("\n", $output)) . " characters", 'ANALYZE');
+
+        if ($returnCode === 0) {
+            $outputText = implode("\n", $output);
+            logMessage("SUCCESS: Analysis completed", 'ANALYZE');
+            logMessage("Analysis preview: " . substr($outputText, 0, 200) . "...", 'ANALYZE');
+            logMessage("=== PDF ANALYSIS COMPLETED SUCCESSFULLY ===", 'ANALYZE');
+
+            echo json_encode([
+                'success' => true,
+                'analysis' => $outputText,
+                'executionTime' => $executionTime
+            ]);
+        } else {
+            logMessage("ERROR: Analysis failed with return code: $returnCode", 'ERROR');
+            logMessage("=== PDF ANALYSIS FAILED ===", 'ANALYZE');
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Analysis failed: ' . implode(' ', $output)
+            ]);
+        }
+        exit;
+    }
+}
+
+// Log application initialization (only for GET requests)
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    logMessage("=== PDF Processor Application Started ===");
+    logMessage("PHP Version: " . PHP_VERSION);
+    logMessage("Current working directory: " . __DIR__);
+    logMessage("Server info: " . $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown');
+    logMessage("Request method: " . $_SERVER['REQUEST_METHOD'] ?? 'Unknown');
+    logMessage("Request URI: " . $_SERVER['REQUEST_URI'] ?? 'Unknown');
+
+    // Log existing files in directories
+    $uploadFiles = glob($uploadDir . '/*');
+    $outputFiles = glob($outputDir . '/*');
+    logMessage("Files in upload directory: " . count($uploadFiles) . " files");
+    logMessage("Files in output directory: " . count($outputFiles) . " files");
+}
+?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="1024" height="800" viewBox="0 0 1024 800">
+    <title>PDF Processor PWA</title>
+    <desc>
+        Advanced PDF conversion and analysis tool
+    </desc>
+    <defs>
+        <style>
+            *{font-family:system-ui,sans-serif}.button{fill:#e74c3c;cursor:pointer}.button:hover{fill:#c0392b}.button-text{fill:#fff;font-size:11px;text-anchor:middle}.input{fill:#fff;stroke:#ced4da}
+        </style>
+    </defs>
+
+    <path fill="#e74c3c" d="M0 0h1000v60H0z"/>
+    <text x="20" y="30" style="fill:#e74c3c;font-size:20px;font-weight:700">📄 PDF Processor</text>
+    <text x="20" y="48" fill="#fadbd8" font-size="12">Convert PDFs to PNG/JPG/SVG • Extract metadata</text>
+    <rect width="960" height="120" x="20" y="80" rx="5" style="fill:#f8f9fa;stroke:#dee2e6"/>
+    <text x="40" y="105" fill="#495057" font-size="12">PDF File:</text>
+    <foreignObject width="300" height="25" x="40" y="110">
+        <xhtml:input id="selectedFile" accept=".pdf" onchange="handleFileSelect()" style="width:100%;height:100%;padding:2px;border-radius:3px;border:1px solid #ced4da;font-size:10px" type="file"/>
+    </foreignObject>
+
+    <text x="40" y="155" fill="#495057" font-size="12">Convert to:</text>
+    <foreignObject width="50" height="20" x="120" y="140">
+        <xhtml:button onclick="convert('png')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            PNG
+        </xhtml:button>
+    </foreignObject>
+    <foreignObject width="50" height="20" x="180" y="140">
+        <xhtml:button onclick="convert('jpg')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            JPG
+        </xhtml:button>
+    </foreignObject>
+    <foreignObject width="50" height="20" x="240" y="140">
+        <xhtml:button onclick="convert('svg')" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            SVG
+        </xhtml:button>
+    </foreignObject>
+    <text x="310" y="135" fill="#495057" font-size="12">DPI:</text>
+    <foreignObject width="60" height="20" x="310" y="140">
+        <xhtml:input id="dpiInput" max="600" min="72" style="width:100%;height:100%;padding:2px;border:1px solid #ced4da;border-radius:2px;font-size:10px" type="number" value="300"/>
+    </foreignObject>
+    <foreignObject width="60" height="20" x="380" y="140">
+        <xhtml:button onclick="analyze()" style="width:100%;height:100%;background:#e74c3c;color:#fff;border:0;border-radius:2px;cursor:pointer;font-size:11px">
+            Analyze
+        </xhtml:button>
+    </foreignObject>
+
+    <text id="status" x="40" y="180" fill="#28a745" font-size="11">Ready</text>
+    <rect width="960" height="400" x="20" y="220" fill="#fff" stroke="#dee2e6" rx="5"/>
+    <text x="40" y="245" fill="#495057" font-size="14" font-weight="bold">Results</text>
+    <text id="results" x="40" y="210" fill="#6c757d" font-size="11">Process a file to see results</text>
+    <text x="40" y="650" fill="#495057" font-size="12">Sample files (click to select):</text>
+
+    <script>
+        <![CDATA[
+    let currentFile = '';
+    
+    function handleFileSelect() {
+      const fileInput = document.getElementById('selectedFile');
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        
+        // Upload the file
+        const formData = new FormData();
+        formData.append('pdfFile', file);
+        
+        document.getElementById('status').textContent = 'Uploading file...';
+        
+        fetch('', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            currentFile = data.filename;
+            const statusMsg = `✅ File uploaded: ${currentFile}
+📁 Path: ${data.absolutePath}
+📊 Size: ${data.fileSize} bytes
+✔️ Verified: ${data.fileExists ? 'File exists' : 'File missing!'}`;
+            document.getElementById('status').innerHTML = statusMsg.replace(/\n/g, '<br>');
+            console.log('Upload details:', data);
+          } else {
+            document.getElementById('status').textContent = 'Upload failed: ' + data.error;
+          }
+        })
+        .catch(error => {
+          document.getElementById('status').textContent = 'Upload error: ' + error.message;
+        });
+      }
+    }
+    
+    function convert(format) {
+      if (!currentFile) {
+        alert('Please select a PDF file first');
+        return;
+      }
+      
+      const dpiInput = document.getElementById('dpiInput');
+      const dpi = dpiInput.value;
+      
+      document.getElementById('status').textContent = `Converting to ${format.toUpperCase()}...`;
+      
+      fetch(`?action=convert&file=${encodeURIComponent(currentFile)}&format=${format}&dpi=${dpi}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('status').textContent = `✅ Converted to ${format.toUpperCase()}`;
+            
+            const resultMsg = `Conversion successful! 
+📄 Input: ${data.absoluteInputPath || 'Unknown path'}
+📁 Output: ${data.absoluteOutputPath || 'Unknown path'}
+📝 File: ${data.output}`;
+            
+            displayResults(resultMsg);
+            
+            // Show download button and update filename
+            const downloadArea = document.getElementById('downloadButtonArea');
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (downloadArea && downloadBtn) {
+              downloadArea.style.display = 'block';
+              downloadBtn.textContent = `📥 Download ${data.output}`;
+              // Store the output filename for download
+              window.currentDownloadFile = data.output;
+            }
+            
+            console.log('Conversion details:', data);
+          } else {
+            document.getElementById('status').textContent = `❌ Conversion failed: ${data.error}`;
+          }
+        })
+        .catch(error => {
+          document.getElementById('status').textContent = `❌ Conversion error: ${error.message}`;
+        });
+    }
+    
+    function analyze() {
+      if (!currentFile) {
+        alert('Please select a PDF file first');
+        return;
+      }
+      
+      document.getElementById('status').textContent = 'Analyzing PDF...';
+      
+      fetch(`?action=analyze&file=${encodeURIComponent(currentFile)}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('status').textContent = '✅ Analysis complete';
+            
+            const resultMsg = `Analysis complete!
+📁 File path: ${data.absoluteInputPath || 'Unknown path'}
+📊 Analysis results:
+${JSON.stringify(data.info, null, 2)}`;
+            
+            displayResults(resultMsg);
+            console.log('Analysis details:', data);
+          } else {
+            document.getElementById('status').textContent = `❌ Analysis failed: ${data.error}`;
+          }
+        })
+        .catch(error => {
+          document.getElementById('status').textContent = `❌ Analysis error: ${error.message}`;
+        });
+    }
+    
+    function selectSample(filename) {
+      currentFile = filename;
+      document.getElementById('status').textContent = 'Selected sample: ' + filename;
+    }
+    
+    function displayResults(content) {
+      document.getElementById('results').textContent = content;
+    }
+    
+    function downloadCurrentFile() {
+      const fileToDownload = window.currentDownloadFile || currentFile;
+      console.log('Starting download for current file:', fileToDownload);
+      
+      fetch(`?action=download&file=${encodeURIComponent(fileToDownload)}`)
+        .then(response => {
+          console.log('Download response status:', response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          console.log('Download blob received, size:', blob.size);
+          const url = URL.createObjectURL(blob);
+          
+          // Try different approaches for SVG compatibility
+          try {
+            // Approach 1: Try creating HTML anchor and clicking
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileToDownload;
+            
+            if (a.style) {
+              a.style.display = 'none';
+            }
+            
+            const container = document.documentElement || document.querySelector('svg');
+            container.appendChild(a);
+            
+            if (typeof a.click === 'function') {
+              a.click();
+            } else {
+              // Fallback: Use window.open if click doesn't work
+              window.open(url, '_blank');
+            }
+            
+            container.removeChild(a);
+            console.log('Download initiated for:', fileToDownload);
+          } catch (e) {
+            // Approach 2: Direct window.open fallback
+            console.log('Fallback to window.open:', e.message);
+            window.open(url, '_blank');
+          }
+          
+          // Clean up after a delay
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        })
+        .catch(error => {
+          console.error('Download error:', error);
+          alert('Download failed: ' + error.message);
+        });
+    }
+  ]]>
+    </script>
+</svg>
