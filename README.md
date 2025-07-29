@@ -649,11 +649,8 @@ if (isset($_FILES['pdf'])) {
 
 ## 📝 Licencja
 
-Ten projekt jest dostępny na licencji MIT. Zobacz plik [LICENSE](LICENSE) dla szczegółów.
+Ten projekt jest dostępny na licencji Apache 2.0. Zobacz plik [LICENSE](LICENSE) dla szczegółów.
 
-## 👥 Współtwórcy
-
-Dziękujemy wszystkim, którzy przyczynili się do rozwoju tego projektu!
 
 ---
 
