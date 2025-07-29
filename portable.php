@@ -2,7 +2,7 @@
 /**
  * Portable SVG+PHP Launcher
  * Single file launcher that can be run with just PHP
- * Usage: php portable-launcher.php [port]
+ * Usage: php portable-run.php [port]
  */
 
 class PortableLauncher {

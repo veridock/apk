@@ -17,26 +17,26 @@ Kompleksowe rozwiązanie do uruchamiania aplikacji SVG+PHP na dowolnej platformi
 ### Opcja 1: Portable Launcher (najprostszy)
 ```bash
 # Pobierz tylko jeden plik
-wget https://raw.githubusercontent.com/your-repo/main/portable-launcher.php
+wget https://raw.githubusercontent.com/your-repo/main/portable-run.php
 
 # Uruchom
-php portable-launcher.php
+php portable-run.php
 
 # Lub na konkretnym porcie
-php portable-launcher.php 8080
+php portable-run.php 8080
 ```
 
 ### Opcja 2: Skrypty natywne
 
 **Windows:**
 ```batch
-launcher.bat
+run.bat
 ```
 
 **Linux/Mac:**
 ```bash
-chmod +x launcher.sh
-./launcher.sh
+chmod +x run.sh
+./run.sh
 ```
 
 ### Opcja 3: Docker
@@ -62,7 +62,7 @@ docker-compose up -d
 1. Pobierz PHP z [windows.php.net](https://windows.php.net/download/)
 2. Rozpakuj do `C:\php`
 3. Dodaj `C:\php` do zmiennej PATH
-4. Uruchom `launcher.bat`
+4. Uruchom `run.bat`
 
 ### Linux
 
@@ -72,11 +72,11 @@ sudo apt update
 sudo apt install php php-cli php-gd imagemagick
 
 # Klonuj repozytorium
-git clone https://github.com/your-repo/svg-php-launcher.git
+git clone https://github.com/veridock/apk.git
 cd svg-php-launcher
 
 # Uruchom
-./launcher.sh
+./run.sh
 ```
 
 #### Fedora/CentOS
@@ -92,9 +92,9 @@ sudo dnf install php php-cli php-gd ImageMagick
 brew install php imagemagick
 
 # Klonuj i uruchom
-git clone https://github.com/your-repo/svg-php-launcher.git
+git clone https://github.com/veridock/apk.git
 cd svg-php-launcher
-./launcher.sh
+./run.sh
 ```
 
 ## 🚀 Sposoby uruchomienia
@@ -155,9 +155,9 @@ svg-php-launcher/
 ├── calculator.svg       # Przykład: kalkulator
 ├── pdf-processor.svg    # Przykład: konwerter PDF
 ├── .env                # Konfiguracja aplikacji
-├── launcher.bat        # Launcher dla Windows
-├── launcher.sh         # Launcher dla Linux/Mac
-├── portable-launcher.php # Jednoplikowy launcher
+├── run.bat        # Launcher dla Windows
+├── run.sh         # Launcher dla Linux/Mac
+├── portable-run.php # Jednoplikowy launcher
 ├── docker-compose.yml  # Konfiguracja Docker
 ├── Dockerfile         # Obraz Docker
 ├── uploads/           # Folder na uploady (pdf-processor)
@@ -225,7 +225,7 @@ Router automatycznie zastępuje następujące placeholdery:
 ```bash
 # Instalacja
 cd /var/www
-git clone https://github.com/your-repo/svg-php-launcher.git
+git clone https://github.com/veridock/apk.git
 cd svg-php-launcher
 
 # Uprawnienia
@@ -392,7 +392,7 @@ php -S localhost:8098 router.php
 ### Problem: "Permission denied"
 ```bash
 # Linux/Mac
-chmod +x launcher.sh
+chmod +x run.sh
 chmod -R 755 uploads output
 
 # SELinux (CentOS/RHEL)
