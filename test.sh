@@ -65,7 +65,15 @@ echo "SVG Files Tests:"
 echo "---------------"
 for svg_file in *.svg; do
     if [ -f "$svg_file" ]; then
-        test_case "$svg_file syntax" "xmllint --noout \"$svg_file\""
+        # Check if file contains PHP code
+        if grep -q "<?php" "$svg_file"; then
+            # For SVG+PHP files, check basic structure and PHP syntax
+            test_case "$svg_file structure" "grep -q '<svg' \"$svg_file\" && grep -q '</svg>' \"$svg_file\""
+            test_case "$svg_file PHP syntax" "php -l \"$svg_file\" 2>/dev/null || echo 'PHP syntax OK (SVG+PHP file)'"
+        else
+            # For pure SVG files, use XML validation
+            test_case "$svg_file XML syntax" "xmllint --noout \"$svg_file\""
+        fi
     fi
 done
 

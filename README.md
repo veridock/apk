@@ -774,10 +774,24 @@ chod +x run.sh
 chmod +x *.sh
 ```
 
+**Problem:** `xmllint --noout *.svg` pokazuje błędy
+```bash
+# To jest NORMALNE dla plików SVG+PHP!
+# Pliki z kodem PHP nie są poprawnym XML-em
+
+# Użyj dedykowanego walidatora zamiast xmllint:
+./validate-svg-php.sh
+
+# Lub testuj komponenty osobno:
+php -l router.php  # Walidacja PHP
+grep -c "<svg" *.svg  # Sprawdź strukturę SVG
+```
+
 **Problem:** SVG nie ładuje się
-- Sprawdź składnię XML: `xmllint --noout plik.svg`
 - Sprawdź router PHP: `php -l router.php`
+- Sprawdź strukturę SVG: `./validate-svg-php.sh plik.svg`
 - Sprawdź logi: `tail -f debug.log`
+- Uruchom przez router: `php router.php plik.svg`
 
 ## 📝 Licencja
 
